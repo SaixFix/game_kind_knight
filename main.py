@@ -1,18 +1,14 @@
 """Platformer Game"""
 import arcade
-
-# Constants
-SCREEN_WIDTH = 1920
-SCREEN_HEIGHT = 1080
-SCREEN_TITLE = "Kind knight"
+from settings import *
 
 
 class MyGame(arcade.Window):
     """ Main application class."""
 
-    def __init__(self, screen_width, screen_height, screen_title):
+    def __init__(self, screen_width, screen_height, screen_title, fullscreen):
         # Вызываем родительский класс и передаем параметры окна
-        super().__init__(screen_width, screen_height, screen_title)
+        super().__init__(screen_width, screen_height, screen_title, fullscreen)
 
         arcade.set_background_color(arcade.csscolor.CORNFLOWER_BLUE)
 
@@ -29,7 +25,7 @@ class MyGame(arcade.Window):
 
 def main():
     """Main функция"""
-    window = MyGame(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+    window = MyGame(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, FULL_SCREEN)
     window.setup()
     arcade.run()
 
