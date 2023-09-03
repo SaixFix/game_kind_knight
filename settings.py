@@ -6,7 +6,7 @@ FULL_SCREEN = False  # полный экран
 
 # Размеры
 TILE_SCALING = 2  # размер плитки
-CHARACTER_SCALING = 0.7  # размер игрока
+CHARACTER_SCALING = 3  # размер игрока
 SPRITE_PIXEL_SIZE = 128  # размер спрайтов
 GRID_PIXEL_SIZE = SPRITE_PIXEL_SIZE * TILE_SCALING  # Размер сетки
 
