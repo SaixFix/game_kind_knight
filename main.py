@@ -36,7 +36,8 @@ class MyGame(arcade.Window):
         self.gui_camera = None
 
         # Keep track of the score
-        self.score = 0
+        self.die_score = 0
+        self.gold_score = 0
 
         # Do we need to reset the score?
         self.reset_score = True
@@ -66,6 +67,10 @@ class MyGame(arcade.Window):
             LAYER_NAME_PLATFORMS: {
                 "use_spatial_hash": True,
             },
+
+            LAYER_NAME_CHEST: {
+                "use_spatial_hash": True,
+            },
             LAYER_NAME_SKY: {
                 "use_spatial_hash": True,
             },
@@ -92,7 +97,7 @@ class MyGame(arcade.Window):
 
         # Keep track of the score, make sure we keep the score if the player finishes a level
         if self.reset_score:
-            self.score = 0
+            self.die_score = 0
         self.reset_score = True
 
         # Add Player Spritelist before "Foreground" layer. This will make the foreground
@@ -142,12 +147,21 @@ class MyGame(arcade.Window):
         self.gui_camera.use()
 
         # Draw our score on the screen, scrolling it with the viewport
-        score_text = f"Score: {self.score}"
+        score_text = f"Die Score: {self.die_score}"
         arcade.draw_text(
             score_text,
-            10,
-            10,
+            200,
+            1050,
             arcade.csscolor.BLACK,
+            18,
+        )
+
+        score_text = f"Gold Score: {self.gold_score}"
+        arcade.draw_text(
+            score_text,
+            0,
+            1050,
+            arcade.csscolor.YELLOW,
             18,
         )
 
@@ -191,21 +205,19 @@ class MyGame(arcade.Window):
 
         # Move the player with the physics engine
         self.physics_engine.update()
-
-        # TODO дописать функцию монеток
         # See if we hit any coins
-        # coin_hit_list = arcade.check_for_collision_with_list(
-        #     self.player_sprite, self.scene[LAYER_NAME_COINS]
-        # )
+        chest_hit_list = arcade.check_for_collision_with_list(
+            self.player_sprite, self.scene[LAYER_NAME_CHEST]
+        )
 
         # Loop through each coin we hit (if any) and remove it
-        # for coin in coin_hit_list:
-        # Remove the coin
-        # coin.remove_from_sprite_lists()
-        # Play a sound
-        # arcade.play_sound(self.collect_coin_sound)
-        # Add one to the score
-        # self.score += 1
+        for chest in chest_hit_list:
+            # Remove the coin
+            chest.remove_from_sprite_lists()
+            # Play a sound
+            arcade.play_sound(self.collect_coin_sound)
+            # Add one to the score
+            self.gold_score += 1
 
         # Did the player fall off the map?
         if self.player_sprite.center_y < -100:
@@ -222,6 +234,7 @@ class MyGame(arcade.Window):
             self.player_sprite.change_y = 0
             self.player_sprite.center_x = PLAYER_START_X
             self.player_sprite.center_y = PLAYER_START_Y
+            self.die_score += 1
 
             arcade.play_sound(self.game_over)
 

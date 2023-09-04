@@ -6,7 +6,7 @@ FULL_SCREEN = False  # полный экран
 
 # Размеры
 TILE_SCALING = 2  # размер плитки
-CHARACTER_SCALING = 3  # размер игрока
+CHARACTER_SCALING = 2  # размер игрока
 SPRITE_PIXEL_SIZE = 128  # размер спрайтов
 GRID_PIXEL_SIZE = SPRITE_PIXEL_SIZE * TILE_SCALING  # Размер сетки
 
@@ -20,16 +20,17 @@ VIEWPORT_LEFT_MARGIN = 270  # Лево
 # Физика
 MOVEMENT_SPEED = 5  # Скорость передвижения
 JUMP_SPEED = 23  # скорость прыжка
-GRAVITY = 1.1  # сила гравитации/притяжения
+GRAVITY = 1.0  # сила гравитации/притяжения
 
 # Player starting position
 PLAYER_START_X = 64
 PLAYER_START_Y = 225
 
-# Layer Names from our TileMap
+# Название слоев из TileMap
 LAYER_NAME_SKY = "sky"
 LAYER_NAME_GROUND = "ground"
 LAYER_NAME_BACKGROUND = "BackGround"
 LAYER_NAME_BACKGROUND2 = "Background2"
 LAYER_NAME_PLATFORMS = "Platforms"
 LAYER_NAME_DIE_BLOCK = "DieBlocks"
+LAYER_NAME_CHEST = "chest"
