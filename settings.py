@@ -26,6 +26,10 @@ GRAVITY = 1.0  # сила гравитации/притяжения
 PLAYER_START_X = 64
 PLAYER_START_Y = 225
 
+# Константа отслеживающая куда смотрит персонаж игрока
+RIGHT_FACING = 0  # На право
+LEFT_FACING = 1  # На лево
+
 # Название слоев из TileMap
 LAYER_NAME_SKY = "sky"
 LAYER_NAME_GROUND = "ground"
@@ -35,3 +39,4 @@ LAYER_NAME_PLATFORMS = "Platforms"
 LAYER_NAME_DIE_BLOCK = "DieBlocks"
 LAYER_NAME_CHEST = "chest"
 LAYER_NAME_MOVING_DIE_BLOCK = "die_block_moving"
+LAYER_NAME_PLAYER = "Player"
