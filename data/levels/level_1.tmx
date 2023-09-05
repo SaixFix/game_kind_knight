@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.9" tiledversion="1.9.2" orientation="orthogonal" renderorder="right-down" width="100" height="25" tilewidth="32" tileheight="32" infinite="0" nextlayerid="12" nextobjectid="2">
+<map version="1.9" tiledversion="1.9.2" orientation="orthogonal" renderorder="right-down" width="100" height="25" tilewidth="32" tileheight="32" infinite="0" nextlayerid="12" nextobjectid="5">
  <tileset firstgid="1" source="TX Tileset Ground.tsx"/>
  <tileset firstgid="257" source="TX Village Props1.tsx"/>
  <tileset firstgid="1281" source="Gradient (z -6).tsx"/>
@@ -242,6 +242,26 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,378,378,0,380,0,0,380,0,380,0,380,0,0,0,0,9903,9904,9905,9906,9903,9903,9904,9905,9906,9903,9904,9905,9903,9904,9905,9906,9983,9984,9985,9903,9904,9905,9906,9903,9904,9905,9906,9903,9904,9905,9906,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="4" name="monsters"/>
+ <objectgroup id="4" name="die_block_moving">
+  <properties>
+   <property name="boundary_left" value="150.0"/>
+   <property name="boundary_right" value="150.0"/>
+   <property name="change_y" value="1.0"/>
+  </properties>
+  <object id="2" gid="380" x="737.333" y="640" width="30.6667" height="32">
+   <properties>
+    <property name="boundary_left" value="592.0"/>
+    <property name="boundary_right" value="2356.0"/>
+    <property name="change_x" value="5.0"/>
+   </properties>
+  </object>
+  <object id="4" gid="380" x="1798.67" y="703.333" width="18" height="18.6667">
+   <properties>
+    <property name="boundary_left" value="3268.0"/>
+    <property name="boundary_right" value="3958.0"/>
+    <property name="change_x" value="5.0"/>
+   </properties>
+  </object>
+ </objectgroup>
  <objectgroup id="5" name="princess"/>
 </map>

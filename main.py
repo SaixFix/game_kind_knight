@@ -67,6 +67,9 @@ class MyGame(arcade.Window):
             LAYER_NAME_PLATFORMS: {
                 "use_spatial_hash": True,
             },
+            LAYER_NAME_MOVING_DIE_BLOCK: {
+                "use_spatial_hash": False,
+            },
 
             LAYER_NAME_CHEST: {
                 "use_spatial_hash": True,
@@ -127,6 +130,7 @@ class MyGame(arcade.Window):
         # Create the 'physics engine'
         self.physics_engine = arcade.PhysicsEnginePlatformer(
             self.player_sprite,
+            platforms=self.scene[LAYER_NAME_MOVING_DIE_BLOCK],
             gravity_constant=GRAVITY,
             walls=self.scene[LAYER_NAME_PLATFORMS],
         )
@@ -205,6 +209,10 @@ class MyGame(arcade.Window):
 
         # Move the player with the physics engine
         self.physics_engine.update()
+
+        # Update walls, used with moving platforms
+        self.scene.update([LAYER_NAME_MOVING_DIE_BLOCK])
+
         # See if we hit any coins
         chest_hit_list = arcade.check_for_collision_with_list(
             self.player_sprite, self.scene[LAYER_NAME_CHEST]
@@ -229,6 +237,10 @@ class MyGame(arcade.Window):
         # Did the player touch something they should not?
         if arcade.check_for_collision_with_list(
                 self.player_sprite, self.scene[LAYER_NAME_DIE_BLOCK]
+
+        ) or arcade.check_for_collision_with_list(
+                self.player_sprite, self.scene[LAYER_NAME_MOVING_DIE_BLOCK]
+
         ):
             self.player_sprite.change_x = 0
             self.player_sprite.change_y = 0
