@@ -19,7 +19,7 @@ VIEWPORT_LEFT_MARGIN = 270  # Лево
 
 # Физика
 MOVEMENT_SPEED = 5  # Скорость передвижения
-JUMP_SPEED = 23  # скорость прыжка
+JUMP_SPEED = 15  # скорость прыжка
 GRAVITY = 1.0  # сила гравитации/притяжения
 
 # Player starting position
@@ -39,4 +39,6 @@ LAYER_NAME_PLATFORMS = "Platforms"
 LAYER_NAME_DIE_BLOCK = "DieBlocks"
 LAYER_NAME_CHEST = "chest"
 LAYER_NAME_MOVING_DIE_BLOCK = "die_block_moving"
+
+# слой игрока для мейн функции
 LAYER_NAME_PLAYER = "Player"

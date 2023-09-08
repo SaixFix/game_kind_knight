@@ -1,4 +1,3 @@
-"""Platformer Game"""
 import arcade
 from settings import *
 import os
@@ -43,6 +42,9 @@ class MyGame(arcade.Window):
 
         # A Camera that can be used to draw GUI elements
         self.gui_camera = None
+
+        # The counter can be used for multi jump
+        self.jumps_since_ground = 0
 
         # Keep track of the score
         self.die_score = 0
@@ -196,6 +198,8 @@ class MyGame(arcade.Window):
                     and not self.jump_needs_reset
             ):
                 self.player_sprite.change_y = JUMP_SPEED
+                # Активируем счетчик иначе прыжки будут бесконечны
+                self.physics_engine.increment_jump_counter()
                 self.jump_needs_reset = True
                 arcade.play_sound(self.jump_sound)
         elif self.down_pressed and not self.up_pressed:
@@ -289,6 +293,13 @@ class MyGame(arcade.Window):
 
         # Update walls, used with moving platforms
         self.scene.update([LAYER_NAME_MOVING_DIE_BLOCK])
+
+        # Add double jump
+        self.physics_engine.enable_multi_jump(2)
+        # self.physics_engine.increment_jump_counter(2)
+        # print(self.jumps_since_ground)
+        # if self.jumps_since_ground > 2:
+        #     self.physics_engine.disable_multi_jump()
 
         # See if we hit any coins
         chest_hit_list = arcade.check_for_collision_with_list(
