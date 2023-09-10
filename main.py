@@ -1,6 +1,6 @@
 import arcade
 
-from gui import get_double_jump_message
+from gui import get_double_jump_message, start_message
 from settings import *
 import os
 import arcade.gui
@@ -146,6 +146,7 @@ class MyGame(arcade.Window):
         self.player_sprite.center_x = PLAYER_START_X
         self.player_sprite.center_y = PLAYER_START_Y
         self.scene.add_sprite(LAYER_NAME_PLAYER, self.player_sprite)
+        start_message(arcade, self.on_message_box_close, self.manager)
 
         # --- Load in a map from the tiled editor ---
 

@@ -1,9 +1,9 @@
-def get_double_jump_message(arcade, callback, manager):
+def get_double_jump_message(arcade_engine, callback_message, ui_manager):
     """
     The pop_up message call when we got the double_jump skill
     The code below opens the message box and auto-dismisses it when done.
     """
-    message_box = arcade.gui.UIMessageBox(
+    message_box = arcade_engine.gui.UIMessageBox(
 
         width=180,
         height=110,
@@ -11,8 +11,31 @@ def get_double_jump_message(arcade, callback, manager):
             "You got a new skill!\n"
             "DOUBLE JUMP!"
         ),
-        callback=callback,
+        callback=callback_message,
         buttons=["Ok"]
     )
 
-    manager.add(message_box)
+    ui_manager.add(message_box)
+
+
+def start_message(arcade_engine, callback_message, ui_manager):
+    """
+    The pop_up message call when we start game
+    The code below opens the message box and auto-dismisses it when done.
+    """
+    message_box = arcade_engine.gui.UIMessageBox(
+
+        width=350,
+        height=200,
+        message_text=(
+            "Управление:\n\n"
+            "W и SPACE: Прыжок и Лестницы.\n"
+            "A и стрелочка влево: движение в лево.\n"
+            "W и стрелочка вправо: движение в право.\n\n"
+            "В золотых сундуках новые навыки!"
+        ),
+        callback=callback_message,
+        buttons=["Ok"]
+    )
+
+    ui_manager.add(message_box)
