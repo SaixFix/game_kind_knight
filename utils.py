@@ -35,27 +35,26 @@ class PlayerCharacter(arcade.Sprite):
 
         # --- Load Textures ---
 
-        # Images
-        main_path = "./data/textures/Warrior/Warrior"
+        # Images path
+        main_path = "./data/textures/knight/"
 
         # Load textures for idle standing
         self.idle_texture_pair = load_texture_pair(f"{main_path}_idle.png")
         self.jump_texture_pair = load_texture_pair(f"{main_path}_jump.png")
-        self.fall_texture_pair = load_texture_pair(f"{main_path}_fall.png")
+        self.fall_texture_pair = load_texture_pair(f"{main_path}_jump.png")
 
         # Load textures for walking
         self.walk_textures = []
-        for i in range(8):
-            texture = load_texture_pair(f"{main_path}_run_{i}.png")
+        for i in range(10):
+            texture = load_texture_pair(f"{main_path}r{i+1}.png")
             self.walk_textures.append(texture)
 
-        # TODO: добавить лазанье
         # Load textures for climbing
-        # self.climbing_textures = []
-        # texture = arcade.load_texture(f"{main_path}_climb_0.png")
-        # self.climbing_textures.append(texture)
-        # texture = arcade.load_texture(f"{main_path}_climb_1.png")
-        # self.climbing_textures.append(texture)
+        self.climbing_textures = []
+        texture = arcade.load_texture(f"{main_path}_idle.png")
+        self.climbing_textures.append(texture)
+        texture = arcade.load_texture(f"{main_path}_jump.png")
+        self.climbing_textures.append(texture)
 
         # Set the initial texture
         self.texture = self.idle_texture_pair[0]
@@ -101,7 +100,7 @@ class PlayerCharacter(arcade.Sprite):
 
         # Walking animation
         self.cur_texture += 1
-        if self.cur_texture > 7:
+        if self.cur_texture > 9:
             self.cur_texture = 0
         self.texture = self.walk_textures[self.cur_texture][
             self.character_face_direction

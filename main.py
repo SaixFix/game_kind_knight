@@ -1,9 +1,21 @@
 import arcade
+
+from gui import get_double_jump_message
 from settings import *
 import os
-import time
+import arcade.gui
 
 from utils import PlayerCharacter
+
+
+def load_texture_pair(filename):
+    """
+    Load a texture pair, with the second being a mirror image.
+    """
+    return [
+        arcade.load_texture(filename),
+        arcade.load_texture(filename, flipped_horizontally=True),
+    ]
 
 
 class MyGame(arcade.Window):
@@ -17,6 +29,10 @@ class MyGame(arcade.Window):
         # запуска с помощью команды "python -m"
         file_path = os.path.dirname(os.path.abspath(__file__))
         os.chdir(file_path)
+
+        # Create and enable the UIManager
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
 
         # Track the current state of what key is pressed
         self.left_pressed = False
@@ -43,6 +59,7 @@ class MyGame(arcade.Window):
         # A Camera that can be used to draw GUI elements
         self.gui_camera = None
 
+        self.double_jump_get = False
         # The counter can be used for multi jump
         self.jumps_since_ground = 0
 
@@ -76,6 +93,9 @@ class MyGame(arcade.Window):
         # Layer Specific Options for the Tilemap
         layer_options = {
             LAYER_NAME_PLATFORMS: {
+                "use_spatial_hash": True,
+            },
+            LAYER_NAME_LADDERS: {
                 "use_spatial_hash": True,
             },
             LAYER_NAME_MOVING_DIE_BLOCK: {
@@ -141,6 +161,7 @@ class MyGame(arcade.Window):
         self.physics_engine = arcade.PhysicsEnginePlatformer(
             self.player_sprite,
             platforms=self.scene[LAYER_NAME_MOVING_DIE_BLOCK],
+            ladders=self.scene[LAYER_NAME_LADDERS],
             gravity_constant=GRAVITY,
             walls=self.scene[LAYER_NAME_PLATFORMS],
         )
@@ -159,6 +180,9 @@ class MyGame(arcade.Window):
 
         # Activate the GUI camera before drawing GUI elements
         self.gui_camera.use()
+
+        # For draw GUI
+        self.manager.draw()
 
         # Draw our score on the screen, scrolling it with the viewport
         score_text = f"Die Score: {self.die_score}"
@@ -180,10 +204,11 @@ class MyGame(arcade.Window):
         )
 
         # Draw hit boxes.
-        # for wall in self.wall_list:
-        #     wall.draw_hit_box(arcade.color.BLACK, 3)
-        #
+
         # self.player_sprite.draw_hit_box(arcade.color.RED, 3)
+
+    def on_message_box_close(self, button_text):
+        print(f"User pressed {button_text}.")
 
     def process_keychange(self):
         """
@@ -220,11 +245,12 @@ class MyGame(arcade.Window):
             self.player_sprite.change_x = -MOVEMENT_SPEED
         else:
             self.player_sprite.change_x = 0
+
     def on_key_press(self, key, modifiers):
         """
         Вызывается при каждом движении мыши.
         """
-        if key == arcade.key.UP or key == arcade.key.W:
+        if key == arcade.key.SPACE or key == arcade.key.W:
             self.up_pressed = True
         elif key == arcade.key.DOWN or key == arcade.key.S:
             self.down_pressed = True
@@ -239,7 +265,7 @@ class MyGame(arcade.Window):
         """
         Вызывается, когда пользователь отпускает клавишу.
         """
-        if key == arcade.key.UP or key == arcade.key.W:
+        if key == arcade.key.SPACE or key == arcade.key.W:
             self.up_pressed = False
             self.jump_needs_reset = False
         elif key == arcade.key.DOWN or key == arcade.key.S:
@@ -295,11 +321,8 @@ class MyGame(arcade.Window):
         self.scene.update([LAYER_NAME_MOVING_DIE_BLOCK])
 
         # Add double jump
-        self.physics_engine.enable_multi_jump(2)
-        # self.physics_engine.increment_jump_counter(2)
-        # print(self.jumps_since_ground)
-        # if self.jumps_since_ground > 2:
-        #     self.physics_engine.disable_multi_jump()
+        if self.double_jump_get:
+            self.physics_engine.enable_multi_jump(2)
 
         # See if we hit any coins
         chest_hit_list = arcade.check_for_collision_with_list(
@@ -308,6 +331,10 @@ class MyGame(arcade.Window):
 
         # Loop through each coin we hit (if any) and remove it
         for chest in chest_hit_list:
+            if 'double_jump' in chest.properties:
+                self.double_jump_get = True
+                # get pop_up message
+                get_double_jump_message(arcade, self.on_message_box_close, self.manager)
             # Remove the coin
             chest.remove_from_sprite_lists()
             # Play a sound
@@ -327,7 +354,7 @@ class MyGame(arcade.Window):
                 self.player_sprite, self.scene[LAYER_NAME_DIE_BLOCK]
 
         ) or arcade.check_for_collision_with_list(
-                self.player_sprite, self.scene[LAYER_NAME_MOVING_DIE_BLOCK]
+            self.player_sprite, self.scene[LAYER_NAME_MOVING_DIE_BLOCK]
 
         ):
             self.player_sprite.change_x = 0

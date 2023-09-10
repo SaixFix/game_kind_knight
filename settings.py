@@ -37,8 +37,9 @@ LAYER_NAME_BACKGROUND = "BackGround"
 LAYER_NAME_BACKGROUND2 = "Background2"
 LAYER_NAME_PLATFORMS = "Platforms"
 LAYER_NAME_DIE_BLOCK = "DieBlocks"
-LAYER_NAME_CHEST = "chest"
+LAYER_NAME_CHEST = "chests"
 LAYER_NAME_MOVING_DIE_BLOCK = "die_block_moving"
+LAYER_NAME_LADDERS = "Ladders"
 
 # слой игрока для мейн функции
 LAYER_NAME_PLAYER = "Player"
