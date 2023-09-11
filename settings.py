@@ -40,6 +40,8 @@ LAYER_NAME_DIE_BLOCK = "DieBlocks"
 LAYER_NAME_CHEST = "chests"
 LAYER_NAME_MOVING_DIE_BLOCK = "die_block_moving"
 LAYER_NAME_LADDERS = "Ladders"
+LAYER_NAME_CHECK_POINTS = "check_points"
+LAYER_NAME_DISAPPEAR_PLATFORMS = "disappearing_platform"
 
 # слой игрока для мейн функции
 LAYER_NAME_PLAYER = "Player"
