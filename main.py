@@ -8,16 +8,6 @@ import arcade.gui
 from utils import PlayerCharacter
 
 
-def load_texture_pair(filename):
-    """
-    Load a texture pair, with the second being a mirror image.
-    """
-    return [
-        arcade.load_texture(filename),
-        arcade.load_texture(filename, flipped_horizontally=True),
-    ]
-
-
 class MyGame(arcade.Window):
     """ Main application class."""
 
@@ -76,6 +66,9 @@ class MyGame(arcade.Window):
         # Level
         self.level = 1
 
+        self.player_start_x = PLAYER_START_X
+        self.player_start_y = PLAYER_START_Y
+
         # Load sounds
         self.collect_coin_sound = arcade.load_sound(":resources:sounds/coin1.wav")
         self.jump_sound = arcade.load_sound(":resources:sounds/jump1.wav")
@@ -95,6 +88,9 @@ class MyGame(arcade.Window):
             LAYER_NAME_PLATFORMS: {
                 "use_spatial_hash": True,
             },
+            LAYER_NAME_DISAPPEAR_PLATFORMS: {
+                "use_spatial_hash": True,
+            },
             LAYER_NAME_LADDERS: {
                 "use_spatial_hash": True,
             },
@@ -103,6 +99,9 @@ class MyGame(arcade.Window):
             },
 
             LAYER_NAME_CHEST: {
+                "use_spatial_hash": True,
+            },
+            LAYER_NAME_CHECK_POINTS: {
                 "use_spatial_hash": True,
             },
             LAYER_NAME_SKY: {
@@ -146,7 +145,7 @@ class MyGame(arcade.Window):
         self.player_sprite.center_x = PLAYER_START_X
         self.player_sprite.center_y = PLAYER_START_Y
         self.scene.add_sprite(LAYER_NAME_PLAYER, self.player_sprite)
-        start_message(arcade, self.on_message_box_close, self.manager)
+        start_message(arcade, self.manager)
 
         # --- Load in a map from the tiled editor ---
 
@@ -207,9 +206,6 @@ class MyGame(arcade.Window):
         # Draw hit boxes.
 
         # self.player_sprite.draw_hit_box(arcade.color.RED, 3)
-
-    def on_message_box_close(self, button_text):
-        print(f"User pressed {button_text}.")
 
     def process_keychange(self):
         """
@@ -315,7 +311,13 @@ class MyGame(arcade.Window):
 
             # Update Animations
             self.scene.update_animation(
-                delta_time, [LAYER_NAME_CHEST, LAYER_NAME_BACKGROUND, LAYER_NAME_PLAYER]
+                delta_time, [
+                    LAYER_NAME_CHEST,
+                    LAYER_NAME_BACKGROUND,
+                    LAYER_NAME_PLAYER,
+                    LAYER_NAME_CHECK_POINTS,
+                    LAYER_NAME_DISAPPEAR_PLATFORMS,
+                ]
             )
 
         # Update walls, used with moving platforms
@@ -325,28 +327,54 @@ class MyGame(arcade.Window):
         if self.double_jump_get:
             self.physics_engine.enable_multi_jump(2)
 
-        # See if we hit any coins
+        # See if we hit any chest
         chest_hit_list = arcade.check_for_collision_with_list(
             self.player_sprite, self.scene[LAYER_NAME_CHEST]
         )
 
-        # Loop through each coin we hit (if any) and remove it
+        # Loop through each chest we hit (if any) and remove it
         for chest in chest_hit_list:
             if 'double_jump' in chest.properties:
                 self.double_jump_get = True
                 # get pop_up message
-                get_double_jump_message(arcade, self.on_message_box_close, self.manager)
-            # Remove the coin
+                get_double_jump_message(arcade, self.manager)
+            if 'cost' in chest.properties:
+                self.gold_score += int(chest.properties['cost'])
+                # Play a sound
+                arcade.play_sound(self.collect_coin_sound)
+            # Remove the chest
             chest.remove_from_sprite_lists()
-            # Play a sound
-            arcade.play_sound(self.collect_coin_sound)
-            # Add one to the score
-            self.gold_score += 1
+
+        # See if we hit any chest
+        d_platforms_hit_list = arcade.check_for_collision_with_list(
+             self.player_sprite, self.scene[LAYER_NAME_DISAPPEAR_PLATFORMS]
+        )
+
+        # Loop through each platforms we hit (if any) and remove it
+        for platforms in d_platforms_hit_list:
+            # platforms the chest
+            platforms.remove_from_sprite_lists()
+
+
+            # See if we hit any check_point
+        check_point_hit_list = arcade.check_for_collision_with_list(
+            self.player_sprite, self.scene[LAYER_NAME_CHECK_POINTS]
+        )
+
+        # Loop through each check_point we hit
+        for check_point in check_point_hit_list:
+            self.player_start_x = check_point.center_x
+            self.player_start_y = check_point.center_y
+            print(f'checkpoint x, y: {check_point.center_x}, {check_point.center_y}')
+            print(f'player_start x, y: {self.player_start_x}, {self.player_start_y}')
+
+            # Remove the coin
+            # check_point.remove_from_sprite_lists()
 
         # Did the player fall off the map?
         if self.player_sprite.center_y < -100:
-            self.player_sprite.center_x = PLAYER_START_X
-            self.player_sprite.center_y = PLAYER_START_Y
+            self.player_sprite.center_x = self.player_start_x
+            self.player_sprite.center_y = self.player_start_y
 
             arcade.play_sound(self.game_over)
 
@@ -360,8 +388,8 @@ class MyGame(arcade.Window):
         ):
             self.player_sprite.change_x = 0
             self.player_sprite.change_y = 0
-            self.player_sprite.center_x = PLAYER_START_X
-            self.player_sprite.center_y = PLAYER_START_Y
+            self.player_sprite.center_x = self.player_start_x
+            self.player_sprite.center_y = self.player_start_y
             self.die_score += 1
 
             arcade.play_sound(self.game_over)
