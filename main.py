@@ -1,11 +1,13 @@
 import arcade
+from pyglet.media import Player
 
 from gui import get_double_jump_message, start_message
 from settings import *
 import os
 import arcade.gui
 
-from utils import PlayerCharacter
+from units import PlayerCharacter
+from utils import level_timer
 
 
 class MyGame(arcade.Window):
@@ -19,7 +21,6 @@ class MyGame(arcade.Window):
         # запуска с помощью команды "python -m"
         file_path = os.path.dirname(os.path.abspath(__file__))
         os.chdir(file_path)
-
         # Create and enable the UIManager
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
@@ -66,13 +67,30 @@ class MyGame(arcade.Window):
         # Level
         self.level = 1
 
+        # Player start position
         self.player_start_x = PLAYER_START_X
         self.player_start_y = PLAYER_START_Y
+
+        # For timer on screen
+        self.total_time = 0.0
+        # Timer on-screen, spend time.
+        self.timer_text = arcade.Text(
+            text="00:00:00",
+            start_x=SCREEN_WIDTH // 2,
+            start_y=1050,
+            color=arcade.color.WHITE,
+            font_size=18,
+            anchor_x="center"
+        )
+
+        # settings sound volume
+        self.sound_volume: float = 0.2
 
         # Load sounds
         self.collect_coin_sound = arcade.load_sound(":resources:sounds/coin1.wav")
         self.jump_sound = arcade.load_sound(":resources:sounds/jump1.wav")
         self.game_over = arcade.load_sound(":resources:sounds/gameover1.wav")
+        self.trap_dead = arcade.load_sound("./data/sounds/scream_hurt.mp3")
 
     def setup(self):
         """Настройте игру здесь. Вызовите эту функцию, чтобы перезапустить игру."""
@@ -184,13 +202,16 @@ class MyGame(arcade.Window):
         # For draw GUI
         self.manager.draw()
 
+        # Draw the timer text
+        self.timer_text.draw()
+
         # Draw our score on the screen, scrolling it with the viewport
         score_text = f"Die Score: {self.die_score}"
         arcade.draw_text(
             score_text,
             200,
             1050,
-            arcade.csscolor.BLACK,
+            arcade.csscolor.RED,
             18,
         )
 
@@ -223,7 +244,7 @@ class MyGame(arcade.Window):
                 # Активируем счетчик иначе прыжки будут бесконечны
                 self.physics_engine.increment_jump_counter()
                 self.jump_needs_reset = True
-                arcade.play_sound(self.jump_sound)
+                arcade.play_sound(self.jump_sound, volume=self.sound_volume)
         elif self.down_pressed and not self.up_pressed:
             if self.physics_engine.is_on_ladder():
                 self.player_sprite.change_y = -MOVEMENT_SPEED
@@ -323,6 +344,21 @@ class MyGame(arcade.Window):
         # Update walls, used with moving platforms
         self.scene.update([LAYER_NAME_MOVING_DIE_BLOCK])
 
+        # Accumulate the total time
+        self.total_time += delta_time
+
+        # Calculate minutes
+        minutes = int(self.total_time) // 60
+
+        # Calculate seconds by using a modulus (remainder)
+        seconds = int(self.total_time) % 60
+
+        # Calculate 100s of a second
+        seconds_100s = int((self.total_time - seconds) * 100)
+
+        # Use string formatting to create a new text string for our timer
+        self.timer_text.text = f"Wasted time: {minutes:02d}:{seconds:02d}:{seconds_100s:02d}"
+
         # Add double jump
         if self.double_jump_get:
             self.physics_engine.enable_multi_jump(2)
@@ -341,20 +377,19 @@ class MyGame(arcade.Window):
             if 'cost' in chest.properties:
                 self.gold_score += int(chest.properties['cost'])
                 # Play a sound
-                arcade.play_sound(self.collect_coin_sound)
+                arcade.play_sound(self.collect_coin_sound, volume=self.sound_volume)
             # Remove the chest
             chest.remove_from_sprite_lists()
 
         # See if we hit any chest
         d_platforms_hit_list = arcade.check_for_collision_with_list(
-             self.player_sprite, self.scene[LAYER_NAME_DISAPPEAR_PLATFORMS]
+            self.player_sprite, self.scene[LAYER_NAME_DISAPPEAR_PLATFORMS]
         )
 
         # Loop through each platforms we hit (if any) and remove it
         for platforms in d_platforms_hit_list:
             # platforms the chest
             platforms.remove_from_sprite_lists()
-
 
             # See if we hit any check_point
         check_point_hit_list = arcade.check_for_collision_with_list(
@@ -376,7 +411,7 @@ class MyGame(arcade.Window):
             self.player_sprite.center_x = self.player_start_x
             self.player_sprite.center_y = self.player_start_y
 
-            arcade.play_sound(self.game_over)
+            arcade.play_sound(self.trap_dead, volume=self.sound_volume)
 
         # Did the player touch something they should not?
         if arcade.check_for_collision_with_list(
@@ -392,7 +427,7 @@ class MyGame(arcade.Window):
             self.player_sprite.center_y = self.player_start_y
             self.die_score += 1
 
-            arcade.play_sound(self.game_over)
+            arcade.play_sound(self.trap_dead, volume=self.sound_volume)
 
         # See if the user got to the end of the level
         if self.player_sprite.center_x >= self.end_of_map:
