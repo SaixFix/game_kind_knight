@@ -1,9 +1,9 @@
 from typing import Optional
 
 import arcade
-from pyglet.media import Player
 
 from gui import get_double_jump_message, start_message
+from other_views import MainMenu
 from settings import *
 import os
 import arcade.gui
@@ -11,12 +11,12 @@ import arcade.gui
 from units import PlayerCharacter
 
 
-class MyGame(arcade.Window):
+class GameView(arcade.View):
     """ Main application class."""
 
-    def __init__(self, screen_width: int, screen_height: int, screen_title: str, fullscreen: bool):
+    def __init__(self):
         # Вызываем родительский класс и передаем параметры окна
-        super().__init__(screen_width, screen_height, screen_title, fullscreen)
+        super().__init__()
 
         # Данное указание каталога требуется для запуска
         # запуска с помощью команды "python -m"
@@ -96,8 +96,8 @@ class MyGame(arcade.Window):
     def setup(self):
         """Настройте игру здесь. Вызовите эту функцию, чтобы перезапустить игру."""
         # Set up the Cameras
-        self.camera = arcade.Camera(self.width, self.height)
-        self.gui_camera = arcade.Camera(self.width, self.height)
+        self.camera = arcade.Camera(self.window.width, self.window.height)
+        self.gui_camera = arcade.Camera(self.window.width, self.window.height)
 
         # Map name
         map_name: str = f"./data/levels/level_{self.level}.tmx"
@@ -184,6 +184,9 @@ class MyGame(arcade.Window):
             gravity_constant=GRAVITY,
             walls=self.scene[LAYER_NAME_PLATFORMS],
         )
+
+    def on_show_view(self):
+        self.setup()
 
     def on_draw(self):
         """Render the screen."""
@@ -447,8 +450,9 @@ class MyGame(arcade.Window):
 
 def main():
     """Main функция"""
-    window = MyGame(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, FULL_SCREEN)
-    window.setup()
+    window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+    menu_view = MainMenu(GameView())
+    window.show_view(menu_view)
     arcade.run()
 
 
