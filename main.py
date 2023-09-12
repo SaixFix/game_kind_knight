@@ -1,3 +1,5 @@
+from typing import Optional
+
 import arcade
 from pyglet.media import Player
 
@@ -7,7 +9,6 @@ import os
 import arcade.gui
 
 from units import PlayerCharacter
-from utils import level_timer
 
 
 class MyGame(arcade.Window):
@@ -22,57 +23,57 @@ class MyGame(arcade.Window):
         file_path = os.path.dirname(os.path.abspath(__file__))
         os.chdir(file_path)
         # Create and enable the UIManager
-        self.manager = arcade.gui.UIManager()
+        self.manager: 'UIManager' = arcade.gui.UIManager()
         self.manager.enable()
 
         # Track the current state of what key is pressed
-        self.left_pressed = False
-        self.right_pressed = False
-        self.up_pressed = False
-        self.down_pressed = False
-        self.jump_needs_reset = False
+        self.left_pressed: bool = False
+        self.right_pressed: bool = False
+        self.up_pressed: bool = False
+        self.down_pressed: bool = False
+        self.jump_needs_reset: bool = False
 
         # Our TileMap Object
-        self.tile_map = None
+        self.tile_map: Optional['TileMap'] = None
 
         # Our Scene Object
-        self.scene = None
+        self.scene: Optional['Scene'] = None
 
         # Separate variable that holds the player sprite
-        self.player_sprite = None
+        self.player_sprite: Optional[PlayerCharacter] = None
 
         # Our physics engine
-        self.physics_engine = None
+        self.physics_engine: Optional['PhysicsEnginePlatformer'] = None
 
         # A Camera that can be used for scrolling the screen
-        self.camera = None
+        self.camera: Optional['Camera'] = None
 
         # A Camera that can be used to draw GUI elements
-        self.gui_camera = None
+        self.gui_camera: Optional['Camera'] = None
 
-        self.double_jump_get = False
+        self.double_jump_get: bool = False
         # The counter can be used for multi jump
-        self.jumps_since_ground = 0
+        self.jumps_since_ground: int = 0
 
         # Keep track of the score
-        self.die_score = 0
-        self.gold_score = 0
+        self.die_score: int = 0
+        self.gold_score: int = 0
 
         # Do we need to reset the score?
-        self.reset_score = True
+        self.reset_score: bool = True
 
         # Where is the right edge of the map?
-        self.end_of_map = 0
+        self.end_of_map: int = 0
 
         # Level
-        self.level = 1
+        self.level: int = 1
 
         # Player start position
-        self.player_start_x = PLAYER_START_X
-        self.player_start_y = PLAYER_START_Y
+        self.player_start_x: int = PLAYER_START_X
+        self.player_start_y: int = PLAYER_START_Y
 
         # For timer on screen
-        self.total_time = 0.0
+        self.total_time: float = 0.0
         # Timer on-screen, spend time.
         self.timer_text = arcade.Text(
             text="00:00:00",
@@ -87,10 +88,10 @@ class MyGame(arcade.Window):
         self.sound_volume: float = 0.2
 
         # Load sounds
-        self.collect_coin_sound = arcade.load_sound(":resources:sounds/coin1.wav")
-        self.jump_sound = arcade.load_sound(":resources:sounds/jump1.wav")
-        self.game_over = arcade.load_sound(":resources:sounds/gameover1.wav")
-        self.trap_dead = arcade.load_sound("./data/sounds/scream_hurt.mp3")
+        self.collect_coin_sound: 'Sound' = arcade.load_sound(":resources:sounds/coin1.wav")
+        self.jump_sound: 'Sound' = arcade.load_sound(":resources:sounds/jump1.wav")
+        self.game_over: 'Sound' = arcade.load_sound(":resources:sounds/gameover1.wav")
+        self.trap_dead: 'Sound' = arcade.load_sound("./data/sounds/scream_hurt.mp3")
 
     def setup(self):
         """Настройте игру здесь. Вызовите эту функцию, чтобы перезапустить игру."""
@@ -99,7 +100,7 @@ class MyGame(arcade.Window):
         self.gui_camera = arcade.Camera(self.width, self.height)
 
         # Map name
-        map_name = f"./data/levels/level_{self.level}.tmx"
+        map_name: str = f"./data/levels/level_{self.level}.tmx"
 
         # Layer Specific Options for the Tilemap
         layer_options = {
@@ -206,7 +207,7 @@ class MyGame(arcade.Window):
         self.timer_text.draw()
 
         # Draw our score on the screen, scrolling it with the viewport
-        score_text = f"Die Score: {self.die_score}"
+        score_text: str = f"Die Score: {self.die_score}"
         arcade.draw_text(
             score_text,
             200,
@@ -215,7 +216,7 @@ class MyGame(arcade.Window):
             18,
         )
 
-        score_text = f"Gold Score: {self.gold_score}"
+        score_text: str = f"Gold Score: {self.gold_score}"
         arcade.draw_text(
             score_text,
             0,
@@ -348,13 +349,13 @@ class MyGame(arcade.Window):
         self.total_time += delta_time
 
         # Calculate minutes
-        minutes = int(self.total_time) // 60
+        minutes: int = int(self.total_time) // 60
 
         # Calculate seconds by using a modulus (remainder)
-        seconds = int(self.total_time) % 60
+        seconds: int = int(self.total_time) % 60
 
         # Calculate 100s of a second
-        seconds_100s = int((self.total_time - seconds) * 100)
+        seconds_100s: int = int((self.total_time - seconds) * 100)
 
         # Use string formatting to create a new text string for our timer
         self.timer_text.text = f"Wasted time: {minutes:02d}:{seconds:02d}:{seconds_100s:02d}"
@@ -364,7 +365,7 @@ class MyGame(arcade.Window):
             self.physics_engine.enable_multi_jump(2)
 
         # See if we hit any chest
-        chest_hit_list = arcade.check_for_collision_with_list(
+        chest_hit_list: list = arcade.check_for_collision_with_list(
             self.player_sprite, self.scene[LAYER_NAME_CHEST]
         )
 
@@ -382,7 +383,7 @@ class MyGame(arcade.Window):
             chest.remove_from_sprite_lists()
 
         # See if we hit any chest
-        d_platforms_hit_list = arcade.check_for_collision_with_list(
+        d_platforms_hit_list: list = arcade.check_for_collision_with_list(
             self.player_sprite, self.scene[LAYER_NAME_DISAPPEAR_PLATFORMS]
         )
 
@@ -392,7 +393,7 @@ class MyGame(arcade.Window):
             platforms.remove_from_sprite_lists()
 
             # See if we hit any check_point
-        check_point_hit_list = arcade.check_for_collision_with_list(
+        check_point_hit_list: list = arcade.check_for_collision_with_list(
             self.player_sprite, self.scene[LAYER_NAME_CHECK_POINTS]
         )
 
