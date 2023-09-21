@@ -25,7 +25,7 @@ class MainMenu(arcade.View):
         start_button = arcade.gui.UIFlatButton(text="Start Game", width=200)
         self.v_box.add(start_button.with_space_around(bottom=20))
 
-        settings_button = arcade.gui.UIFlatButton(text="Settings(в разработке)", width=200)
+        settings_button = arcade.gui.UIFlatButton(text="Settings", width=200)
         self.v_box.add(settings_button.with_space_around(bottom=20))
 
         exit_button = arcade.gui.UIFlatButton(text="Exit", width=200)
@@ -79,9 +79,8 @@ class MainMenu(arcade.View):
         print("Exit:", event)
         arcade.exit()
 
-    @staticmethod
-    def on_click_settings(event):
-        print("Settings:", event)
+    def on_click_settings(self, event):
+        self.window.show_view(self.window.settings_view)
 
 
 # class GameOverView(arcade.View):

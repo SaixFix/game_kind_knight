@@ -362,9 +362,6 @@ class GameView(arcade.View):
         # Move the player with the physics engine
         self.physics_engine.update()
 
-        # sounds volume
-        # self.sound_volume = round((self.ui_slider.value / 100), 1)
-
         # Update animations
         if self.physics_engine.can_jump():
             self.player_sprite.can_jump = False
