@@ -2,7 +2,7 @@ from typing import Optional
 
 import arcade
 from arcade.experimental.uislider import UISlider
-from arcade.gui import UILabel, UIOnChangeEvent
+from arcade.gui import UILabel, UIOnChangeEvent, UITextureButton
 
 from settings import *
 
@@ -17,7 +17,6 @@ class MainMenu(arcade.View):
         # --- Required for all code that uses UI element,
         # a UIManager to handle the UI.
         self.manager = arcade.gui.UIManager()
-        self.manager.enable()
 
         # Create a vertical BoxGroup to align buttons
         self.v_box = arcade.gui.UIBoxLayout()
@@ -52,20 +51,11 @@ class MainMenu(arcade.View):
         settings_button.on_click = self.on_click_settings
         exit_button.on_click = self.on_click_exit
 
-        self.sound_volume_result = 0
-
         @self.ui_slider.event()
         def on_change(event: UIOnChangeEvent):
             label_down.text = f"{self.ui_slider.value:02.0f}"
             label_down.fit_content()
-
-    @property
-    def sound_volume(self) -> float:
-        """
-        Sound slider value rounds to 1 number after the decimal point
-        """
-        sound_volume = round((self.ui_slider.value / 100), 1)
-        return sound_volume
+            self.window.sound_value = round((self.ui_slider.value / 100), 1)
 
     def on_show_view(self):
         """Called when switching to this view."""
@@ -92,9 +82,6 @@ class MainMenu(arcade.View):
     @staticmethod
     def on_click_settings(event):
         print("Settings:", event)
-
-    def on_update(self, delta_time: float):
-        self.sound_volume_result = self.sound_volume
 
 
 # class GameOverView(arcade.View):
@@ -188,7 +175,43 @@ class SettingsView(arcade.View):
 
         self.manager = arcade.gui.UIManager()
 
+        # Load button textures
+        cross = arcade.load_texture("./data/textures/UI/quit.png")
+        cross_hover = arcade.load_texture("./data/textures/UI/quit_hover.png")
 
+        # buttons settings
+        self.settings_button = UITextureButton(SCREEN_WIDTH - 100, SCREEN_HEIGHT - 35, texture=cross,
+                                               texture_hovered=cross_hover)
+        self.settings_button.on_click = self.quit_button_on
+        self.manager.add(self.settings_button)
+
+        # Create a vertical BoxGroup to align buttons
+        self.v_box = arcade.gui.UIBoxLayout()
+
+        # Create the slider
+        self.ui_slider = UISlider(value=50, width=300, height=50)
+        label_down = UILabel(text=f"{self.ui_slider.value:02.0f}")
+        label_up = UILabel(text=f"Sound volume")
+
+        self.v_box.add(child=label_up, align_y=100)
+        self.v_box.add(child=self.ui_slider)
+        self.v_box.add(child=label_down, align_y=100)
+
+        # Create a widget to hold the v_box widget, that will center the buttons
+        self.manager.add(arcade.gui.UIAnchorWidget(
+            anchor_x="center_x",
+            anchor_y="center_y",
+            child=self.v_box))
+
+        # for sound slider
+        @self.ui_slider.event()
+        def on_change(event: UIOnChangeEvent):
+            label_down.text = f"{self.ui_slider.value:02.0f}"
+            label_down.fit_content()
+            self.window.sound_value = round((self.ui_slider.value / 100), 1)
+
+    def quit_button_on(self, event):
+        self.window.show_view(self.window.game_view)
 
     def on_show_view(self):
         """Called when switching to this view."""
@@ -200,4 +223,4 @@ class SettingsView(arcade.View):
 
     def on_draw(self):
         self.clear()
-
+        self.manager.draw()

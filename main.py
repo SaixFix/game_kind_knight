@@ -24,6 +24,8 @@ class GameWindow(arcade.Window):
 
         arcade.set_background_color(arcade.color.DARK_BLUE_GRAY)
 
+        self.sound_value: float = 0.5
+
 
 class GameView(arcade.View):
     """ Main application class."""
@@ -39,7 +41,6 @@ class GameView(arcade.View):
         # Create the UIManager
         self.manager = arcade.gui.UIManager()
 
-        self.settings_view = SettingsView()
         # self.show_view
 
         # Track the current state of what key is pressed
@@ -99,25 +100,10 @@ class GameView(arcade.View):
             font_size=18,
             anchor_x="center"
         )
-        # settings sound volume
-        self.sound_volume: float = 0.5
 
         # Load button textures
         settings = arcade.load_texture("./data/textures/UI/settings.png")
         settings_hover = arcade.load_texture("./data/textures/UI/settings_hover.png")
-
-        # bottons settings
-
-        # # sound slider
-        # self.v_box = arcade.gui.UIBoxLayout()
-        # self.ui_slider = UISlider(value=50, width=300, height=50)
-        #
-        # label_down = UILabel(text=f"{self.ui_slider.value:02.0f}")
-        # label_up = UILabel(text=f"Sound volume")
-        #
-        # self.v_box.add(child=label_up, align_y=100)
-        # self.v_box.add(child=self.ui_slider)
-        # self.v_box.add(child=label_down, align_y=100)
 
         self.settings_button = UITextureButton(SCREEN_WIDTH - 30, SCREEN_HEIGHT - 35, texture=settings,
                                                texture_hovered=settings_hover)
@@ -128,22 +114,16 @@ class GameView(arcade.View):
         style = {'bg_color': (139, 69, 19), "font_color": arcade.color.WHITE, "font_name": ("Comic Sans MS",)}
 
         # Load sounds
-        self.collect_coin_sound: 'Sound' = arcade.load_sound(":resources:sounds/coin1.wav")
-        self.jump_sound: 'Sound' = arcade.load_sound(":resources:sounds/jump1.wav")
-        self.game_over: 'Sound' = arcade.load_sound(":resources:sounds/gameover1.wav")
-        self.trap_dead: 'Sound' = arcade.load_sound("./data/sounds/scream_hurt.mp3")
-
-        # for sound slider
-        # @self.ui_slider.event()
-        # def on_change(event: UIOnChangeEvent):
-        #     label_down.text = f"{self.ui_slider.value:02.0f}"
-        #     label_down.fit_content()
+        self.collect_coin_sound = arcade.load_sound(":resources:sounds/coin1.wav")
+        self.jump_sound = arcade.load_sound(":resources:sounds/jump1.wav")
+        self.game_over = arcade.load_sound(":resources:sounds/gameover1.wav")
+        self.trap_dead = arcade.load_sound("./data/sounds/scream_hurt.mp3")
 
     def on_message_box_close(self, button_text):
         print(f"User pressed {button_text}.")
 
     def setting_button_on(self, event):
-        self.window.show_view(self.settings_view)
+        self.window.show_view(self.window.settings_view)
 
     def setup(self):
         """Настройте игру здесь. Вызовите эту функцию, чтобы перезапустить игру."""
@@ -303,7 +283,7 @@ class GameView(arcade.View):
                 # Активируем счетчик иначе прыжки будут бесконечны
                 self.physics_engine.increment_jump_counter()
                 self.jump_needs_reset = True
-                arcade.play_sound(self.jump_sound, volume=self.sound_volume)
+                arcade.play_sound(self.jump_sound, volume=self.window.sound_value)
         elif self.down_pressed and not self.up_pressed:
             if self.physics_engine.is_on_ladder():
                 self.player_sprite.change_y = -MOVEMENT_SPEED
@@ -445,7 +425,7 @@ class GameView(arcade.View):
             if 'cost' in chest.properties:
                 self.gold_score += int(chest.properties['cost'])
                 # Play a sound
-                arcade.play_sound(self.collect_coin_sound, volume=self.sound_volume)
+                arcade.play_sound(self.collect_coin_sound, volume=self.window.sound_value)
             # Remove the chest
             chest.remove_from_sprite_lists()
 
@@ -479,7 +459,7 @@ class GameView(arcade.View):
             self.player_sprite.center_x = self.player_start_x
             self.player_sprite.center_y = self.player_start_y
 
-            arcade.play_sound(self.trap_dead, volume=self.sound_volume)
+            arcade.play_sound(self.trap_dead, volume=self.window.sound_value)
 
         # Did the player touch something they should not?
         if arcade.check_for_collision_with_list(
@@ -495,7 +475,7 @@ class GameView(arcade.View):
             self.player_sprite.center_y = self.player_start_y
             self.die_score += 1
 
-            arcade.play_sound(self.trap_dead, volume=self.sound_volume)
+            arcade.play_sound(self.trap_dead, volume=self.window.sound_value)
 
         # See if the user got to the end of the level
         if self.player_sprite.center_x >= self.end_of_map:
