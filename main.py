@@ -5,12 +5,24 @@ from arcade.experimental.uislider import UISlider
 from arcade.gui import UILabel, UIOnChangeEvent, UITextureButton
 
 from gui import get_double_jump_message, start_message
-from other_views import MainMenu, PauseView
+from other_views import MainMenu, PauseView, SettingsView
 from settings import *
 import os
 import arcade.gui
 
 from units import PlayerCharacter
+
+
+class GameWindow(arcade.Window):
+    def __init__(self, screen_wight, screen_height, screen_title):
+        super().__init__(screen_wight, screen_height, screen_title)
+
+        self.main_menu = MainMenu()
+        self.game_view = GameView()
+        self.settings_view = SettingsView()
+        self.show_view(self.main_menu)
+
+        arcade.set_background_color(arcade.color.DARK_BLUE_GRAY)
 
 
 class GameView(arcade.View):
@@ -24,9 +36,11 @@ class GameView(arcade.View):
         # запуска с помощью команды "python -m"
         file_path = os.path.dirname(os.path.abspath(__file__))
         os.chdir(file_path)
-        # Create and enable the UIManager
-        self.manager: 'UIManager' = arcade.gui.UIManager()
-        self.manager.enable()
+        # Create the UIManager
+        self.manager = arcade.gui.UIManager()
+
+        self.settings_view = SettingsView()
+        # self.show_view
 
         # Track the current state of what key is pressed
         self.left_pressed: bool = False
@@ -107,6 +121,7 @@ class GameView(arcade.View):
 
         self.settings_button = UITextureButton(SCREEN_WIDTH - 30, SCREEN_HEIGHT - 35, texture=settings,
                                                texture_hovered=settings_hover)
+        self.settings_button.on_click = self.setting_button_on
         self.manager.add(self.settings_button)
 
         # button style
@@ -126,6 +141,9 @@ class GameView(arcade.View):
 
     def on_message_box_close(self, button_text):
         print(f"User pressed {button_text}.")
+
+    def setting_button_on(self, event):
+        self.window.show_view(self.settings_view)
 
     def setup(self):
         """Настройте игру здесь. Вызовите эту функцию, чтобы перезапустить игру."""
@@ -221,6 +239,10 @@ class GameView(arcade.View):
 
     def on_show_view(self):
         self.setup()
+        self.manager.enable()
+
+    def on_hide_view(self):
+        self.manager.disable()
 
     def on_draw(self):
         """Render the screen."""
@@ -498,9 +520,12 @@ def main():
     # print('hello')
     # arcade.run()
 
-    window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
-    main_menu_view = MainMenu(GameView())
-    window.show_view(main_menu_view)
+    # window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+    # main_menu_view = MainMenu(GameView())
+    # window.show_view(main_menu_view)
+    # arcade.run()
+
+    window = GameWindow(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
     arcade.run()
 
 

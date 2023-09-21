@@ -4,15 +4,15 @@ import arcade
 from arcade.experimental.uislider import UISlider
 from arcade.gui import UILabel, UIOnChangeEvent
 
-
 from settings import *
 
 
 class MainMenu(arcade.View):
     """Class that manages the 'menu' view."""
-    def __init__(self, game_view: arcade.View):
+
+    def __init__(self):
         super().__init__()
-        self.game_view: arcade.View = game_view
+        # self.game_view: arcade.View = game_view
 
         # --- Required for all code that uses UI element,
         # a UIManager to handle the UI.
@@ -70,6 +70,10 @@ class MainMenu(arcade.View):
     def on_show_view(self):
         """Called when switching to this view."""
         arcade.set_background_color(arcade.color.DARK_BLUE_GRAY)
+        self.manager.enable()
+
+    def on_hide_view(self):
+        self.manager.disable()
 
     def on_draw(self):
         """Draw the menu"""
@@ -78,8 +82,7 @@ class MainMenu(arcade.View):
 
     def on_click_start(self, event):
         print("Start:", event)
-        self.window.show_view(self.game_view)
-        self.manager.clear()
+        self.window.show_view(self.window.game_view)
 
     @staticmethod
     def on_click_exit(event):
@@ -175,3 +178,26 @@ class PauseView(arcade.View):
         """
         if key == arcade.key.ESCAPE:
             self.window.show_view(self.game_view)
+
+
+class SettingsView(arcade.View):
+    """Class that manages the 'menu' view."""
+
+    def __init__(self):
+        super().__init__()
+
+        self.manager = arcade.gui.UIManager()
+
+
+
+    def on_show_view(self):
+        """Called when switching to this view."""
+        arcade.set_background_color(arcade.color.DARK_BLUE_GRAY)
+        self.manager.enable()
+
+    def on_hide_view(self):
+        self.manager.disable()
+
+    def on_draw(self):
+        self.clear()
+
