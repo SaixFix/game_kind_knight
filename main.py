@@ -1,9 +1,11 @@
 from typing import Optional
 
 import arcade
+from arcade.experimental.uislider import UISlider
+from arcade.gui import UILabel, UIOnChangeEvent, UITextureButton
 
 from gui import get_double_jump_message, start_message
-from other_views import MainMenu
+from other_views import MainMenu, PauseView
 from settings import *
 import os
 import arcade.gui
@@ -83,15 +85,47 @@ class GameView(arcade.View):
             font_size=18,
             anchor_x="center"
         )
-
         # settings sound volume
-        self.sound_volume: float = 0.2
+        self.sound_volume: float = 0.5
+
+        # Load button textures
+        settings = arcade.load_texture("./data/textures/UI/settings.png")
+        settings_hover = arcade.load_texture("./data/textures/UI/settings_hover.png")
+
+        # bottons settings
+
+        # # sound slider
+        # self.v_box = arcade.gui.UIBoxLayout()
+        # self.ui_slider = UISlider(value=50, width=300, height=50)
+        #
+        # label_down = UILabel(text=f"{self.ui_slider.value:02.0f}")
+        # label_up = UILabel(text=f"Sound volume")
+        #
+        # self.v_box.add(child=label_up, align_y=100)
+        # self.v_box.add(child=self.ui_slider)
+        # self.v_box.add(child=label_down, align_y=100)
+
+        self.settings_button = UITextureButton(SCREEN_WIDTH - 30, SCREEN_HEIGHT - 35, texture=settings,
+                                               texture_hovered=settings_hover)
+        self.manager.add(self.settings_button)
+
+        # button style
+        style = {'bg_color': (139, 69, 19), "font_color": arcade.color.WHITE, "font_name": ("Comic Sans MS",)}
 
         # Load sounds
         self.collect_coin_sound: 'Sound' = arcade.load_sound(":resources:sounds/coin1.wav")
         self.jump_sound: 'Sound' = arcade.load_sound(":resources:sounds/jump1.wav")
         self.game_over: 'Sound' = arcade.load_sound(":resources:sounds/gameover1.wav")
         self.trap_dead: 'Sound' = arcade.load_sound("./data/sounds/scream_hurt.mp3")
+
+        # for sound slider
+        # @self.ui_slider.event()
+        # def on_change(event: UIOnChangeEvent):
+        #     label_down.text = f"{self.ui_slider.value:02.0f}"
+        #     label_down.fit_content()
+
+    def on_message_box_close(self, button_text):
+        print(f"User pressed {button_text}.")
 
     def setup(self):
         """Настройте игру здесь. Вызовите эту функцию, чтобы перезапустить игру."""
@@ -227,7 +261,6 @@ class GameView(arcade.View):
             arcade.csscolor.YELLOW,
             18,
         )
-
         # Draw hit boxes.
 
         # self.player_sprite.draw_hit_box(arcade.color.RED, 3)
@@ -281,6 +314,12 @@ class GameView(arcade.View):
         elif key == arcade.key.RIGHT or key == arcade.key.D:
             self.right_pressed = True
 
+        # Did the user want to pause?
+        elif key == arcade.key.ESCAPE:
+            # Pass the current view to preserve this view's state
+            pause = PauseView(self)
+            self.window.show_view(pause)
+
         self.process_keychange()
 
     def on_key_release(self, key, modifiers):
@@ -320,6 +359,9 @@ class GameView(arcade.View):
 
         # Move the player with the physics engine
         self.physics_engine.update()
+
+        # sounds volume
+        # self.sound_volume = round((self.ui_slider.value / 100), 1)
 
         # Update animations
         if self.physics_engine.can_jump():
@@ -450,9 +492,15 @@ class GameView(arcade.View):
 
 def main():
     """Main функция"""
+    # window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+    # menu_view = MainMenu(GameView())
+    # window.show_view(menu_view)
+    # print('hello')
+    # arcade.run()
+
     window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
-    menu_view = MainMenu(GameView())
-    window.show_view(menu_view)
+    main_menu_view = MainMenu(GameView())
+    window.show_view(main_menu_view)
     arcade.run()
 
 
