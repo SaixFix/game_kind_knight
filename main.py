@@ -1,8 +1,7 @@
 from typing import Optional
 
 import arcade
-from arcade.experimental.uislider import UISlider
-from arcade.gui import UILabel, UIOnChangeEvent, UITextureButton
+from arcade.gui import UILabel, UITextureButton
 
 from gui import get_double_jump_message, start_message
 from other_views import MainMenu, PauseView, SettingsView
@@ -104,9 +103,10 @@ class GameView(arcade.View):
         # Load button textures
         settings = arcade.load_texture("./data/textures/UI/settings.png")
         settings_hover = arcade.load_texture("./data/textures/UI/settings_hover.png")
+        settings_pressed = arcade.load_texture("./data/textures/UI/settings_pressed.png")
 
         self.settings_button = UITextureButton(SCREEN_WIDTH - 30, SCREEN_HEIGHT - 35, texture=settings,
-                                               texture_hovered=settings_hover)
+                                               texture_hovered=settings_hover, texture_pressed=settings_pressed)
         self.settings_button.on_click = self.setting_button_on
         self.manager.add(self.settings_button)
 
@@ -218,7 +218,8 @@ class GameView(arcade.View):
         )
 
     def on_show_view(self):
-        self.setup()
+        # self.setup()
+        self.window.game_view.setup()
         self.manager.enable()
 
     def on_hide_view(self):

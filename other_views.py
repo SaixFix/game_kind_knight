@@ -1,5 +1,3 @@
-from typing import Optional
-
 import arcade
 from arcade.experimental.uislider import UISlider
 from arcade.gui import UILabel, UIOnChangeEvent, UITextureButton
@@ -18,27 +16,52 @@ class MainMenu(arcade.View):
         # a UIManager to handle the UI.
         self.manager = arcade.gui.UIManager()
 
+        # Load button textures
+        start = arcade.load_texture("./data/textures/UI/start.png")
+        start_hover = arcade.load_texture("./data/textures/UI/start_hover.png")
+        start_pressed = arcade.load_texture("./data/textures/UI/start_pressed.png")
+
+        settings = arcade.load_texture("./data/textures/UI/settings_main_menu.png")
+        settings_hover = arcade.load_texture("./data/textures/UI/settings_main_menu_hover.png")
+        settings_pressed = arcade.load_texture("./data/textures/UI/settings_main_menu_pressed.png")
+
+        exit_button = arcade.load_texture("./data/textures/UI/exit.png")
+        exit_hover = arcade.load_texture("./data/textures/UI/exit_hover.png")
+        exit_pressed = arcade.load_texture("./data/textures/UI/exit_pressed.png")
+
         # Create a vertical BoxGroup to align buttons
         self.v_box = arcade.gui.UIBoxLayout()
 
         # Create the buttons
-        start_button = arcade.gui.UIFlatButton(text="Start Game", width=200)
+        start_button = arcade.gui.UITextureButton(
+            texture=start,
+            texture_hovered=start_hover,
+            texture_pressed=start_pressed,
+            text="Start Game",
+            width=200,
+            height=50
+        )
         self.v_box.add(start_button.with_space_around(bottom=20))
 
-        settings_button = arcade.gui.UIFlatButton(text="Settings", width=200)
+        settings_button = arcade.gui.UITextureButton(
+            texture=settings,
+            texture_hovered=settings_hover,
+            texture_pressed=settings_pressed,
+            text="Settings",
+            width=200,
+            height=50
+        )
         self.v_box.add(settings_button.with_space_around(bottom=20))
 
-        exit_button = arcade.gui.UIFlatButton(text="Exit", width=200)
+        exit_button = arcade.gui.UITextureButton(
+            texture=exit_button,
+            texture_hovered=exit_hover,
+            texture_pressed=exit_pressed,
+            text="Exit",
+            width=200,
+            height=50
+        )
         self.v_box.add(exit_button.with_space_around(bottom=20))
-
-        # Create the slider
-        self.ui_slider = UISlider(value=50, width=300, height=50)
-        label_down = UILabel(text=f"{self.ui_slider.value:02.0f}")
-        label_up = UILabel(text=f"Sound volume")
-
-        self.v_box.add(child=label_up, align_y=100)
-        self.v_box.add(child=self.ui_slider)
-        self.v_box.add(child=label_down, align_y=100)
 
         # Create a widget to hold the v_box widget, that will center the buttons
         self.manager.add(arcade.gui.UIAnchorWidget(
@@ -50,12 +73,6 @@ class MainMenu(arcade.View):
         start_button.on_click = self.on_click_start
         settings_button.on_click = self.on_click_settings
         exit_button.on_click = self.on_click_exit
-
-        @self.ui_slider.event()
-        def on_change(event: UIOnChangeEvent):
-            label_down.text = f"{self.ui_slider.value:02.0f}"
-            label_down.fit_content()
-            self.window.sound_value = round((self.ui_slider.value / 100), 1)
 
     def on_show_view(self):
         """Called when switching to this view."""
@@ -178,16 +195,50 @@ class SettingsView(arcade.View):
         cross = arcade.load_texture("./data/textures/UI/quit.png")
         cross_hover = arcade.load_texture("./data/textures/UI/quit_hover.png")
 
-        # buttons settings
-        self.settings_button = UITextureButton(SCREEN_WIDTH - 100, SCREEN_HEIGHT - 35, texture=cross,
-                                               texture_hovered=cross_hover)
-        self.settings_button.on_click = self.quit_button_on
-        self.manager.add(self.settings_button)
+        template_button = arcade.load_texture("./data/textures/UI/template_button.png")
+        template_hover = arcade.load_texture("./data/textures/UI/template_button_hover.png")
+        template_pressed = arcade.load_texture("./data/textures/UI/template_button_pressed.png")
 
         # Create a vertical BoxGroup to align buttons
         self.v_box = arcade.gui.UIBoxLayout()
 
-        # Create the slider
+        # create buttons
+        main_menu_button = arcade.gui.UITextureButton(
+            texture=template_button,
+            texture_hovered=template_hover,
+            texture_pressed=template_pressed,
+            text="Main Menu",
+            width=200,
+            height=50
+        )
+        self.v_box.add(main_menu_button.with_space_around(bottom=20))
+
+        back_to_game_button = arcade.gui.UITextureButton(
+            texture=template_button,
+            texture_hovered=template_hover,
+            texture_pressed=template_pressed,
+            text="Game",
+            width=200,
+            height=50
+        )
+        self.v_box.add(back_to_game_button.with_space_around(bottom=20))
+
+        exit_button = arcade.gui.UITextureButton(
+            texture=template_button,
+            texture_hovered=template_hover,
+            texture_pressed=template_pressed,
+            text="Exit",
+            width=200,
+            height=50
+        )
+        self.v_box.add(exit_button.with_space_around(bottom=20))
+
+        # assign self.on_click_start as callback
+        main_menu_button.on_click = self.main_menu_button_on
+        back_to_game_button.on_click = self.game_button_on
+        exit_button.on_click = self.on_click_exit
+
+        # Create the audio slider
         self.ui_slider = UISlider(value=50, width=300, height=50)
         label_down = UILabel(text=f"{self.ui_slider.value:02.0f}")
         label_up = UILabel(text=f"Sound volume")
@@ -209,7 +260,14 @@ class SettingsView(arcade.View):
             label_down.fit_content()
             self.window.sound_value = round((self.ui_slider.value / 100), 1)
 
-    def quit_button_on(self, event):
+    @staticmethod
+    def on_click_exit(event):
+        print("Exit:", event)
+        arcade.exit()
+
+    def main_menu_button_on(self, event):
+        self.window.show_view(self.window.main_menu)
+    def game_button_on(self, event):
         self.window.show_view(self.window.game_view)
 
     def on_show_view(self):
