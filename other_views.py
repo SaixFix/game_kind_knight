@@ -2,7 +2,7 @@ import arcade
 from arcade.experimental.uislider import UISlider
 from arcade.gui import UILabel, UIOnChangeEvent, UITextureButton
 
-from gui.gui_buttons import GuiAssets
+from gui.main_menu_gui import MainMenuUiAssets
 from settings import *
 
 
@@ -24,7 +24,7 @@ class MainMenu(arcade.View):
         # a UIManager to handle the UI.
         self.manager = arcade.gui.UIManager()
         # GuiAssets consist of all UI elements
-        gui_items = GuiAssets(self.manager, self.window, self.media_player)
+        gui_items = MainMenuUiAssets(self.manager, self.window, self.media_player)
         # Get manager with all UI elements
         self.manager = gui_items.main_menu_gui()
 

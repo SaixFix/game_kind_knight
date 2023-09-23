@@ -3,7 +3,7 @@ from arcade.experimental.uislider import UISlider
 from arcade.gui import UILabel, UIOnChangeEvent
 
 
-class GuiAssets:
+class MainMenuUiAssets:
     def __init__(self, manager: arcade.gui.UIManager, window: arcade.Window, media_player: arcade.load_sound):
         self.window = window
         self.manager = manager
