@@ -23,7 +23,9 @@ class MainMenu(arcade.View):
         # --- Required for all code that uses UI element,
         # a UIManager to handle the UI.
         self.manager = arcade.gui.UIManager()
+        # GuiAssets consist of all UI elements
         gui_items = GuiAssets(self.manager, self.window, self.media_player)
+        # Get manager with all UI elements
         self.manager = gui_items.main_menu_gui()
 
     def on_show_view(self):
@@ -32,6 +34,7 @@ class MainMenu(arcade.View):
         self.media_player.play()
 
     def on_hide_view(self):
+        """Called when came out from this view."""
         self.manager.disable()
         self.media_player.pause()
 

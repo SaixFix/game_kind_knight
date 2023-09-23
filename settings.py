@@ -45,3 +45,41 @@ LAYER_NAME_DISAPPEAR_PLATFORMS = "disappearing_platform"
 
 # слой игрока для мейн функции
 LAYER_NAME_PLAYER = "Player"
+
+# словарь с параметрами слоев для setup()
+LAYER_OPTIONS = {
+            LAYER_NAME_PLATFORMS: {
+                "use_spatial_hash": True,
+            },
+            LAYER_NAME_DISAPPEAR_PLATFORMS: {
+                "use_spatial_hash": True,
+            },
+            LAYER_NAME_LADDERS: {
+                "use_spatial_hash": True,
+            },
+            LAYER_NAME_MOVING_DIE_BLOCK: {
+                "use_spatial_hash": False,
+            },
+
+            LAYER_NAME_CHEST: {
+                "use_spatial_hash": True,
+            },
+            LAYER_NAME_CHECK_POINTS: {
+                "use_spatial_hash": True,
+            },
+            LAYER_NAME_SKY: {
+                "use_spatial_hash": True,
+            },
+            LAYER_NAME_GROUND: {
+                "use_spatial_hash": True,
+            },
+            LAYER_NAME_BACKGROUND: {
+                "use_spatial_hash": True,
+            },
+            LAYER_NAME_BACKGROUND2: {
+                "use_spatial_hash": True,
+            },
+            LAYER_NAME_DIE_BLOCK: {
+                "use_spatial_hash": True,
+            },
+        }

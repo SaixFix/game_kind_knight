@@ -102,3 +102,5 @@ class GuiAssets:
             self.window.show_view(self.window.settings_view)
 
         return self.manager
+
+

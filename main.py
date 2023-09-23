@@ -1,8 +1,9 @@
 from typing import Optional
 
 import arcade
-from arcade.gui import UILabel, UITextureButton
+from arcade.gui import UILabel
 
+from gui.game_ui import GameUiAssets
 from ui_message import get_double_jump_message, start_message
 from other_views import MainMenu, PauseView, SettingsView
 from settings import *
@@ -39,8 +40,21 @@ class GameView(arcade.View):
         # запуска с помощью команды "python -m"
         file_path = os.path.dirname(os.path.abspath(__file__))
         os.chdir(file_path)
+
         # Create the UIManager
         self.manager = arcade.gui.UIManager()
+        # GameUiAssets consist of all UI elements
+        gui_items = GameUiAssets(self.manager, self.window)
+        # Get manager with all UI elements
+        self.manager = gui_items.game_ui()
+
+        # Keep track of the score
+        self.die_score: int = 0
+        self.gold_score: int = 0
+
+        # UI scores elements
+        self.gold_score_ui = gui_items.gold_scores_ui(self.gold_score)
+        self.die_score_ui = gui_items.die_score_ui(self.die_score)
 
         # Track the current state of what key is pressed
         self.left_pressed: bool = False
@@ -50,30 +64,26 @@ class GameView(arcade.View):
         self.jump_needs_reset: bool = False
 
         # Our TileMap Object
-        self.tile_map: Optional['TileMap'] = None
+        self.tile_map: Optional[arcade.TileMap] = None
 
         # Our Scene Object
-        self.scene: Optional['Scene'] = None
+        self.scene: Optional[arcade.Scene] = None
 
         # Separate variable that holds the player sprite
         self.player_sprite: Optional[PlayerCharacter] = None
 
         # Our physics engine
-        self.physics_engine: Optional['PhysicsEnginePlatformer'] = None
+        self.physics_engine: Optional[arcade.PhysicsEnginePlatformer] = None
 
         # A Camera that can be used for scrolling the screen
-        self.camera: Optional['Camera'] = None
+        self.camera: Optional[arcade.Camera] = None
 
         # A Camera that can be used to draw GUI elements
-        self.gui_camera: Optional['Camera'] = None
+        self.gui_camera: Optional[arcade.Camera] = None
 
         self.double_jump_get: bool = False
         # The counter can be used for multi jump
         self.jumps_since_ground: int = 0
-
-        # Keep track of the score
-        self.die_score: int = 0
-        self.gold_score: int = 0
 
         # Do we need to reset the score?
         self.reset_score: bool = True
@@ -100,60 +110,6 @@ class GameView(arcade.View):
             anchor_x="center"
         )
 
-        # Scores on-screen in game
-        self.gold_score_ui = UILabel(
-            text=f" Gold Score: {self.gold_score} ",
-            text_color=arcade.csscolor.GOLD,
-            font_size=18,
-            x=5,
-            y=1050,
-            bold=True
-        )
-
-        self.manager.add(self.gold_score_ui)
-
-        self.die_score_ui = UILabel(
-            text=f" Die Score: {self.die_score} ",
-            text_color=(255, 0, 0),
-            font_size=18,
-            x=185,
-            y=1050,
-            bold=True
-        )
-
-        self.manager.add(self.die_score_ui)
-
-        # Load button textures
-        template_button = arcade.load_texture("./data/textures/UI/template_button_hover.png")
-        settings = arcade.load_texture("./data/textures/UI/settings.png")
-        settings_hover = arcade.load_texture("./data/textures/UI/settings_hover.png")
-        settings_pressed = arcade.load_texture("./data/textures/UI/settings_pressed.png")
-
-        self.settings_button = UITextureButton(SCREEN_WIDTH - 30, SCREEN_HEIGHT - 35, texture=settings,
-                                               texture_hovered=settings_hover, texture_pressed=settings_pressed)
-        self.settings_button.on_click = self.setting_button_on
-        self.manager.add(self.settings_button)
-
-        # background textures for score_text
-        gold_score_textures = arcade.gui.UITexturePane(
-            tex=template_button,
-            child=self.gold_score_ui
-        )
-
-        self.manager.add(gold_score_textures)
-
-        die_score_textures = arcade.gui.UITexturePane(
-            tex=template_button,
-            child=self.die_score_ui
-        )
-
-        self.manager.add(die_score_textures)
-
-
-
-        # button style
-        style = {'bg_color': (139, 69, 19), "font_color": arcade.color.WHITE, "font_name": ("Comic Sans MS",)}
-
         # Load sounds
         self.collect_coin_sound = arcade.load_sound(":resources:sounds/coin1.wav")
         self.jump_sound = arcade.load_sound(":resources:sounds/jump1.wav")
@@ -162,9 +118,6 @@ class GameView(arcade.View):
 
     def on_message_box_close(self, button_text):
         print(f"User pressed {button_text}.")
-
-    def setting_button_on(self, event):
-        self.window.show_view(self.window.settings_view)
 
     def setup(self):
         """Настройте игру здесь. Вызовите эту функцию, чтобы перезапустить игру."""
@@ -176,42 +129,7 @@ class GameView(arcade.View):
         map_name: str = f"./data/levels/level_{self.level}.tmx"
 
         # Layer Specific Options for the Tilemap
-        layer_options = {
-            LAYER_NAME_PLATFORMS: {
-                "use_spatial_hash": True,
-            },
-            LAYER_NAME_DISAPPEAR_PLATFORMS: {
-                "use_spatial_hash": True,
-            },
-            LAYER_NAME_LADDERS: {
-                "use_spatial_hash": True,
-            },
-            LAYER_NAME_MOVING_DIE_BLOCK: {
-                "use_spatial_hash": False,
-            },
-
-            LAYER_NAME_CHEST: {
-                "use_spatial_hash": True,
-            },
-            LAYER_NAME_CHECK_POINTS: {
-                "use_spatial_hash": True,
-            },
-            LAYER_NAME_SKY: {
-                "use_spatial_hash": True,
-            },
-            LAYER_NAME_GROUND: {
-                "use_spatial_hash": True,
-            },
-            LAYER_NAME_BACKGROUND: {
-                "use_spatial_hash": True,
-            },
-            LAYER_NAME_BACKGROUND2: {
-                "use_spatial_hash": True,
-            },
-            LAYER_NAME_DIE_BLOCK: {
-                "use_spatial_hash": True,
-            },
-        }
+        layer_options: dict = LAYER_OPTIONS
 
         # Load in TileMap
         self.tile_map = arcade.load_tilemap(map_name, TILE_SCALING, layer_options)
@@ -285,7 +203,6 @@ class GameView(arcade.View):
 
         # Draw the timer text
         self.timer_text.draw()
-
 
         # Draw hit boxes.
 
