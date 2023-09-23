@@ -16,11 +16,13 @@ class GameWindow(arcade.Window):
     def __init__(self, screen_wight, screen_height, screen_title):
         super().__init__(screen_wight, screen_height, screen_title)
 
+        # all views
         self.main_menu = MainMenu()
         self.game_view = GameView()
         self.settings_view = SettingsView()
         self.show_view(self.main_menu)
 
+        # Set background color
         arcade.set_background_color(arcade.color.DARK_BLUE_GRAY)
 
         self.sound_value: float = 0.5
@@ -39,8 +41,6 @@ class GameView(arcade.View):
         os.chdir(file_path)
         # Create the UIManager
         self.manager = arcade.gui.UIManager()
-
-        # self.show_view
 
         # Track the current state of what key is pressed
         self.left_pressed: bool = False
@@ -218,7 +218,6 @@ class GameView(arcade.View):
         )
 
     def on_show_view(self):
-        # self.setup()
         self.window.game_view.setup()
         self.manager.enable()
 
@@ -491,18 +490,7 @@ class GameView(arcade.View):
 
 
 def main():
-    """Main функция"""
-    # window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
-    # menu_view = MainMenu(GameView())
-    # window.show_view(menu_view)
-    # print('hello')
-    # arcade.run()
-
-    # window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
-    # main_menu_view = MainMenu(GameView())
-    # window.show_view(main_menu_view)
-    # arcade.run()
-
+    """Main function"""
     window = GameWindow(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
     arcade.run()
 

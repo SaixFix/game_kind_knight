@@ -10,7 +10,14 @@ class MainMenu(arcade.View):
 
     def __init__(self):
         super().__init__()
-        # self.game_view: arcade.View = game_view
+
+        # Background image
+        self.background = arcade.load_texture("./data/textures/background.png") \
+ \
+            # Background music
+        self.music = arcade.load_sound('./data/sounds/background_music_menu.mp3')
+        self.media_player = self.music.play()
+        self.media_player.volume = 0.5
 
         # --- Required for all code that uses UI element,
         # a UIManager to handle the UI.
@@ -28,6 +35,8 @@ class MainMenu(arcade.View):
         exit_button = arcade.load_texture("./data/textures/UI/exit.png")
         exit_hover = arcade.load_texture("./data/textures/UI/exit_hover.png")
         exit_pressed = arcade.load_texture("./data/textures/UI/exit_pressed.png")
+
+        template_button = arcade.load_texture("./data/textures/UI/template_button.png")
 
         # Create a vertical BoxGroup to align buttons
         self.v_box = arcade.gui.UIBoxLayout()
@@ -69,15 +78,48 @@ class MainMenu(arcade.View):
             anchor_y="center_y",
             child=self.v_box))
 
+
+
+        # Create the audio slider
+        style_slider = {'normal_bg': (255, 0, 0)}
+        self.ui_slider = UISlider(
+            x=0,
+            y=50,
+            value=50,
+            width=200,
+            height=30,
+            style=style_slider
+        )
+        label_down = UILabel(text=f"{self.ui_slider.value:02.0f}")
+        label_up = UILabel(text=f"Sound volume")
+
+        self.manager.add(self.ui_slider)
+
+        # background textures for audio slider
+        slider_textures = arcade.gui.UITexturePane(
+            tex=template_button,
+            child=self.ui_slider
+        )
+
+        self.manager.add(slider_textures)
+
+
         # assign self.on_click_start as callback
         start_button.on_click = self.on_click_start
         settings_button.on_click = self.on_click_settings
         exit_button.on_click = self.on_click_exit
 
+        # for sound slider
+        @self.ui_slider.event()
+        def on_change(event: UIOnChangeEvent):
+            label_down.text = f"{self.ui_slider.value:02.0f}"
+            label_down.fit_content()
+            self.media_player.volume = round((self.ui_slider.value / 100), 1)
+
     def on_show_view(self):
         """Called when switching to this view."""
-        arcade.set_background_color(arcade.color.DARK_BLUE_GRAY)
         self.manager.enable()
+        self.media_player.play()
 
     def on_hide_view(self):
         self.manager.disable()
@@ -85,6 +127,11 @@ class MainMenu(arcade.View):
     def on_draw(self):
         """Draw the menu"""
         self.clear()
+
+        # Draw background image
+        arcade.draw_lrwh_rectangle_textured(0, 0,
+                                            SCREEN_WIDTH, SCREEN_HEIGHT,
+                                            self.background)
         self.manager.draw()
 
     def on_click_start(self, event):
@@ -191,10 +238,6 @@ class SettingsView(arcade.View):
 
         self.manager = arcade.gui.UIManager()
 
-        # Load button textures
-        cross = arcade.load_texture("./data/textures/UI/quit.png")
-        cross_hover = arcade.load_texture("./data/textures/UI/quit_hover.png")
-
         template_button = arcade.load_texture("./data/textures/UI/template_button.png")
         template_hover = arcade.load_texture("./data/textures/UI/template_button_hover.png")
         template_pressed = arcade.load_texture("./data/textures/UI/template_button_pressed.png")
@@ -267,6 +310,7 @@ class SettingsView(arcade.View):
 
     def main_menu_button_on(self, event):
         self.window.show_view(self.window.main_menu)
+
     def game_button_on(self, event):
         self.window.show_view(self.window.game_view)
 
