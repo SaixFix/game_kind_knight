@@ -78,8 +78,6 @@ class MainMenu(arcade.View):
             anchor_y="center_y",
             child=self.v_box))
 
-
-
         # Create the audio slider
         style_slider = {'normal_bg': (255, 0, 0)}
         self.ui_slider = UISlider(
@@ -102,7 +100,6 @@ class MainMenu(arcade.View):
         )
 
         self.manager.add(slider_textures)
-
 
         # assign self.on_click_start as callback
         start_button.on_click = self.on_click_start

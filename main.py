@@ -100,7 +100,31 @@ class GameView(arcade.View):
             anchor_x="center"
         )
 
+        # Scores on-screen in game
+        self.gold_score_ui = UILabel(
+            text=f" Gold Score: {self.gold_score} ",
+            text_color=arcade.csscolor.GOLD,
+            font_size=18,
+            x=5,
+            y=1050,
+            bold=True
+        )
+
+        self.manager.add(self.gold_score_ui)
+
+        self.die_score_ui = UILabel(
+            text=f" Die Score: {self.die_score} ",
+            text_color=(255, 0, 0),
+            font_size=18,
+            x=185,
+            y=1050,
+            bold=True
+        )
+
+        self.manager.add(self.die_score_ui)
+
         # Load button textures
+        template_button = arcade.load_texture("./data/textures/UI/template_button_hover.png")
         settings = arcade.load_texture("./data/textures/UI/settings.png")
         settings_hover = arcade.load_texture("./data/textures/UI/settings_hover.png")
         settings_pressed = arcade.load_texture("./data/textures/UI/settings_pressed.png")
@@ -109,6 +133,23 @@ class GameView(arcade.View):
                                                texture_hovered=settings_hover, texture_pressed=settings_pressed)
         self.settings_button.on_click = self.setting_button_on
         self.manager.add(self.settings_button)
+
+        # background textures for score_text
+        gold_score_textures = arcade.gui.UITexturePane(
+            tex=template_button,
+            child=self.gold_score_ui
+        )
+
+        self.manager.add(gold_score_textures)
+
+        die_score_textures = arcade.gui.UITexturePane(
+            tex=template_button,
+            child=self.die_score_ui
+        )
+
+        self.manager.add(die_score_textures)
+
+
 
         # button style
         style = {'bg_color': (139, 69, 19), "font_color": arcade.color.WHITE, "font_name": ("Comic Sans MS",)}
@@ -245,24 +286,7 @@ class GameView(arcade.View):
         # Draw the timer text
         self.timer_text.draw()
 
-        # Draw our score on the screen, scrolling it with the viewport
-        score_text: str = f"Die Score: {self.die_score}"
-        arcade.draw_text(
-            score_text,
-            200,
-            1050,
-            arcade.csscolor.RED,
-            18,
-        )
 
-        score_text: str = f"Gold Score: {self.gold_score}"
-        arcade.draw_text(
-            score_text,
-            0,
-            1050,
-            arcade.csscolor.YELLOW,
-            18,
-        )
         # Draw hit boxes.
 
         # self.player_sprite.draw_hit_box(arcade.color.RED, 3)
@@ -403,6 +427,10 @@ class GameView(arcade.View):
 
         # Use string formatting to create a new text string for our timer
         self.timer_text.text = f"Wasted time: {minutes:02d}:{seconds:02d}:{seconds_100s:02d}"
+
+        self.die_score_ui.text = f" Die Score: {self.die_score} "
+
+        self.gold_score_ui.text = f" Gold Score: {self.gold_score} "
 
         # Add double jump
         if self.double_jump_get:
