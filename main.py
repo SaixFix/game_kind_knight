@@ -3,7 +3,7 @@ from typing import Optional
 import arcade
 from arcade.gui import UILabel, UITextureButton
 
-from gui import get_double_jump_message, start_message
+from ui_message import get_double_jump_message, start_message
 from other_views import MainMenu, PauseView, SettingsView
 from settings import *
 import os

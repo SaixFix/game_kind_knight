@@ -1,6 +1,6 @@
-
 def on_message_box_close(button_text):
     print(f"User pressed {button_text}.")
+
 
 def get_double_jump_message(arcade_engine, ui_manager):
     """
