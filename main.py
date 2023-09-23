@@ -1,125 +1,135 @@
-import arcade
+from typing import Optional
 
-from gui import get_double_jump_message, start_message
+import arcade
+from arcade.gui import UILabel
+
+from gui.game_ui import GameUiAssets
+from ui_message import get_double_jump_message, start_message
+from other_views import MainMenu, PauseView, SettingsView
 from settings import *
 import os
 import arcade.gui
 
-from utils import PlayerCharacter
+from units import PlayerCharacter
 
 
-class MyGame(arcade.Window):
+class GameWindow(arcade.Window):
+    def __init__(self, screen_wight, screen_height, screen_title):
+        super().__init__(screen_wight, screen_height, screen_title)
+
+        # all views
+        self.main_menu = MainMenu()
+        self.game_view = GameView()
+        self.settings_view = SettingsView()
+        self.show_view(self.main_menu)
+
+        # Set background color
+        arcade.set_background_color(arcade.color.DARK_BLUE_GRAY)
+
+        self.sound_value: float = 0.5
+
+
+class GameView(arcade.View):
     """ Main application class."""
 
-    def __init__(self, screen_width: int, screen_height: int, screen_title: str, fullscreen: bool):
+    def __init__(self):
         # Вызываем родительский класс и передаем параметры окна
-        super().__init__(screen_width, screen_height, screen_title, fullscreen)
+        super().__init__()
 
         # Данное указание каталога требуется для запуска
         # запуска с помощью команды "python -m"
         file_path = os.path.dirname(os.path.abspath(__file__))
         os.chdir(file_path)
 
-        # Create and enable the UIManager
+        # Create the UIManager
         self.manager = arcade.gui.UIManager()
-        self.manager.enable()
-
-        # Track the current state of what key is pressed
-        self.left_pressed = False
-        self.right_pressed = False
-        self.up_pressed = False
-        self.down_pressed = False
-        self.jump_needs_reset = False
-
-        # Our TileMap Object
-        self.tile_map = None
-
-        # Our Scene Object
-        self.scene = None
-
-        # Separate variable that holds the player sprite
-        self.player_sprite = None
-
-        # Our physics engine
-        self.physics_engine = None
-
-        # A Camera that can be used for scrolling the screen
-        self.camera = None
-
-        # A Camera that can be used to draw GUI elements
-        self.gui_camera = None
-
-        self.double_jump_get = False
-        # The counter can be used for multi jump
-        self.jumps_since_ground = 0
+        # GameUiAssets consist of all UI elements
+        gui_items = GameUiAssets(self.manager, self.window)
+        # Get manager with all UI elements
+        self.manager = gui_items.game_ui()
 
         # Keep track of the score
-        self.die_score = 0
-        self.gold_score = 0
+        self.die_score: int = 0
+        self.gold_score: int = 0
+
+        # UI scores elements
+        self.gold_score_ui = gui_items.gold_scores_ui(self.gold_score)
+        self.die_score_ui = gui_items.die_score_ui(self.die_score)
+
+        # Track the current state of what key is pressed
+        self.left_pressed: bool = False
+        self.right_pressed: bool = False
+        self.up_pressed: bool = False
+        self.down_pressed: bool = False
+        self.jump_needs_reset: bool = False
+
+        # Our TileMap Object
+        self.tile_map: Optional[arcade.TileMap] = None
+
+        # Our Scene Object
+        self.scene: Optional[arcade.Scene] = None
+
+        # Separate variable that holds the player sprite
+        self.player_sprite: Optional[PlayerCharacter] = None
+
+        # Our physics engine
+        self.physics_engine: Optional[arcade.PhysicsEnginePlatformer] = None
+
+        # A Camera that can be used for scrolling the screen
+        self.camera: Optional[arcade.Camera] = None
+
+        # A Camera that can be used to draw GUI elements
+        self.gui_camera: Optional[arcade.Camera] = None
+
+        self.double_jump_get: bool = False
+        # The counter can be used for multi jump
+        self.jumps_since_ground: int = 0
 
         # Do we need to reset the score?
-        self.reset_score = True
+        self.reset_score: bool = True
 
         # Where is the right edge of the map?
-        self.end_of_map = 0
+        self.end_of_map: int = 0
 
         # Level
-        self.level = 1
+        self.level: int = 1
 
-        self.player_start_x = PLAYER_START_X
-        self.player_start_y = PLAYER_START_Y
+        # Player start position
+        self.player_start_x: int = PLAYER_START_X
+        self.player_start_y: int = PLAYER_START_Y
+
+        # For timer on screen
+        self.total_time: float = 0.0
+        # Timer on-screen, spend time.
+        self.timer_text = arcade.Text(
+            text="00:00:00",
+            start_x=SCREEN_WIDTH // 2,
+            start_y=1050,
+            color=arcade.color.WHITE,
+            font_size=18,
+            anchor_x="center"
+        )
 
         # Load sounds
         self.collect_coin_sound = arcade.load_sound(":resources:sounds/coin1.wav")
         self.jump_sound = arcade.load_sound(":resources:sounds/jump1.wav")
         self.game_over = arcade.load_sound(":resources:sounds/gameover1.wav")
+        self.trap_dead = arcade.load_sound("./data/sounds/scream_hurt.mp3")
+
+    def on_message_box_close(self, button_text):
+        print(f"User pressed {button_text}.")
 
     def setup(self):
         """Настройте игру здесь. Вызовите эту функцию, чтобы перезапустить игру."""
         # Set up the Cameras
-        self.camera = arcade.Camera(self.width, self.height)
-        self.gui_camera = arcade.Camera(self.width, self.height)
+        self.camera = arcade.Camera(self.window.width, self.window.height)
+        self.gui_camera = arcade.Camera(self.window.width, self.window.height)
 
         # Map name
-        map_name = f"./data/levels/level_{self.level}.tmx"
+        map_name: str = f"./data/levels/level_{self.level}.tmx"
 
         # Layer Specific Options for the Tilemap
-        layer_options = {
-            LAYER_NAME_PLATFORMS: {
-                "use_spatial_hash": True,
-            },
-            LAYER_NAME_DISAPPEAR_PLATFORMS: {
-                "use_spatial_hash": True,
-            },
-            LAYER_NAME_LADDERS: {
-                "use_spatial_hash": True,
-            },
-            LAYER_NAME_MOVING_DIE_BLOCK: {
-                "use_spatial_hash": False,
-            },
-
-            LAYER_NAME_CHEST: {
-                "use_spatial_hash": True,
-            },
-            LAYER_NAME_CHECK_POINTS: {
-                "use_spatial_hash": True,
-            },
-            LAYER_NAME_SKY: {
-                "use_spatial_hash": True,
-            },
-            LAYER_NAME_GROUND: {
-                "use_spatial_hash": True,
-            },
-            LAYER_NAME_BACKGROUND: {
-                "use_spatial_hash": True,
-            },
-            LAYER_NAME_BACKGROUND2: {
-                "use_spatial_hash": True,
-            },
-            LAYER_NAME_DIE_BLOCK: {
-                "use_spatial_hash": True,
-            },
-        }
+        layer_options: dict = LAYER_OPTIONS
 
         # Load in TileMap
         self.tile_map = arcade.load_tilemap(map_name, TILE_SCALING, layer_options)
@@ -166,6 +176,13 @@ class MyGame(arcade.Window):
             walls=self.scene[LAYER_NAME_PLATFORMS],
         )
 
+    def on_show_view(self):
+        self.window.game_view.setup()
+        self.manager.enable()
+
+    def on_hide_view(self):
+        self.manager.disable()
+
     def on_draw(self):
         """Render the screen."""
 
@@ -184,24 +201,8 @@ class MyGame(arcade.Window):
         # For draw GUI
         self.manager.draw()
 
-        # Draw our score on the screen, scrolling it with the viewport
-        score_text = f"Die Score: {self.die_score}"
-        arcade.draw_text(
-            score_text,
-            200,
-            1050,
-            arcade.csscolor.BLACK,
-            18,
-        )
-
-        score_text = f"Gold Score: {self.gold_score}"
-        arcade.draw_text(
-            score_text,
-            0,
-            1050,
-            arcade.csscolor.YELLOW,
-            18,
-        )
+        # Draw the timer text
+        self.timer_text.draw()
 
         # Draw hit boxes.
 
@@ -223,7 +224,7 @@ class MyGame(arcade.Window):
                 # Активируем счетчик иначе прыжки будут бесконечны
                 self.physics_engine.increment_jump_counter()
                 self.jump_needs_reset = True
-                arcade.play_sound(self.jump_sound)
+                arcade.play_sound(self.jump_sound, volume=self.window.sound_value)
         elif self.down_pressed and not self.up_pressed:
             if self.physics_engine.is_on_ladder():
                 self.player_sprite.change_y = -MOVEMENT_SPEED
@@ -255,6 +256,12 @@ class MyGame(arcade.Window):
             self.left_pressed = True
         elif key == arcade.key.RIGHT or key == arcade.key.D:
             self.right_pressed = True
+
+        # Did the user want to pause?
+        elif key == arcade.key.ESCAPE:
+            # Pass the current view to preserve this view's state
+            pause = PauseView(self)
+            self.window.show_view(pause)
 
         self.process_keychange()
 
@@ -323,12 +330,31 @@ class MyGame(arcade.Window):
         # Update walls, used with moving platforms
         self.scene.update([LAYER_NAME_MOVING_DIE_BLOCK])
 
+        # Accumulate the total time
+        self.total_time += delta_time
+
+        # Calculate minutes
+        minutes: int = int(self.total_time) // 60
+
+        # Calculate seconds by using a modulus (remainder)
+        seconds: int = int(self.total_time) % 60
+
+        # Calculate 100s of a second
+        seconds_100s: int = int((self.total_time - seconds) * 100)
+
+        # Use string formatting to create a new text string for our timer
+        self.timer_text.text = f"Wasted time: {minutes:02d}:{seconds:02d}:{seconds_100s:02d}"
+
+        self.die_score_ui.text = f" Die Score: {self.die_score} "
+
+        self.gold_score_ui.text = f" Gold Score: {self.gold_score} "
+
         # Add double jump
         if self.double_jump_get:
             self.physics_engine.enable_multi_jump(2)
 
         # See if we hit any chest
-        chest_hit_list = arcade.check_for_collision_with_list(
+        chest_hit_list: list = arcade.check_for_collision_with_list(
             self.player_sprite, self.scene[LAYER_NAME_CHEST]
         )
 
@@ -341,13 +367,13 @@ class MyGame(arcade.Window):
             if 'cost' in chest.properties:
                 self.gold_score += int(chest.properties['cost'])
                 # Play a sound
-                arcade.play_sound(self.collect_coin_sound)
+                arcade.play_sound(self.collect_coin_sound, volume=self.window.sound_value)
             # Remove the chest
             chest.remove_from_sprite_lists()
 
         # See if we hit any chest
-        d_platforms_hit_list = arcade.check_for_collision_with_list(
-             self.player_sprite, self.scene[LAYER_NAME_DISAPPEAR_PLATFORMS]
+        d_platforms_hit_list: list = arcade.check_for_collision_with_list(
+            self.player_sprite, self.scene[LAYER_NAME_DISAPPEAR_PLATFORMS]
         )
 
         # Loop through each platforms we hit (if any) and remove it
@@ -355,9 +381,8 @@ class MyGame(arcade.Window):
             # platforms the chest
             platforms.remove_from_sprite_lists()
 
-
             # See if we hit any check_point
-        check_point_hit_list = arcade.check_for_collision_with_list(
+        check_point_hit_list: list = arcade.check_for_collision_with_list(
             self.player_sprite, self.scene[LAYER_NAME_CHECK_POINTS]
         )
 
@@ -376,7 +401,7 @@ class MyGame(arcade.Window):
             self.player_sprite.center_x = self.player_start_x
             self.player_sprite.center_y = self.player_start_y
 
-            arcade.play_sound(self.game_over)
+            arcade.play_sound(self.trap_dead, volume=self.window.sound_value)
 
         # Did the player touch something they should not?
         if arcade.check_for_collision_with_list(
@@ -392,7 +417,7 @@ class MyGame(arcade.Window):
             self.player_sprite.center_y = self.player_start_y
             self.die_score += 1
 
-            arcade.play_sound(self.game_over)
+            arcade.play_sound(self.trap_dead, volume=self.window.sound_value)
 
         # See if the user got to the end of the level
         if self.player_sprite.center_x >= self.end_of_map:
@@ -410,9 +435,8 @@ class MyGame(arcade.Window):
 
 
 def main():
-    """Main функция"""
-    window = MyGame(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, FULL_SCREEN)
-    window.setup()
+    """Main function"""
+    window = GameWindow(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
     arcade.run()
 
 
