@@ -44,9 +44,53 @@ class MainMenu(arcade.View):
 
         # Draw background image
         arcade.draw_lrwh_rectangle_textured(0, 0,
-                                            SCREEN_WIDTH, SCREEN_HEIGHT,
+                                            self.window.width, self.window.height,
                                             self.background)
         self.manager.draw()
+
+
+class LoadingView(arcade.View):
+    """Class that manages the 'menu' view."""
+
+    def __init__(self):
+        super().__init__()
+
+        # Store a semitransparent color to use as an overlay
+        self.fill_color = arcade.make_transparent_color(
+            arcade.color.WHITE, transparency=150
+        )
+
+    def on_show_view(self):
+        """Called when switching to this view."""
+        self.window.show_view(self.window.game_view)
+
+    def on_hide_view(self):
+        """Called when came out from this view."""
+
+    def on_draw(self):
+        """Draw the menu"""
+        # First, draw the underlying view
+        # This also calls start_render(), so no need to do it again
+        self.game_view.on_draw()
+
+        # Now create a filled rect that covers the current viewport
+        # We get the viewport size from the game view
+        arcade.draw_lrtb_rectangle_filled(
+            left=self.window.width - self.window.width,
+            right=self.window.width,
+            top=self.window.height,
+            bottom=self.window.height - self.window.width,
+            color=self.fill_color,
+        )
+
+        # Now show the Pause text
+        arcade.draw_text(
+            "PAUSED - ESC TO CONTINUE",
+            start_x=0 + 500,
+            start_y=0 + 300,
+            color=arcade.color.INDIGO,
+            font_size=40,
+        )
 
 
 class PauseView(arcade.View):
@@ -76,17 +120,17 @@ class PauseView(arcade.View):
         # We get the viewport size from the game view
         arcade.draw_lrtb_rectangle_filled(
             left=self.window.width - self.window.width,
-            right=SCREEN_WIDTH,
-            top=SCREEN_HEIGHT,
-            bottom=SCREEN_HEIGHT - SCREEN_HEIGHT,
+            right=self.window.width,
+            top=self.window.height,
+            bottom=self.window.height - self.window.width,
             color=self.fill_color,
         )
 
         # Now show the Pause text
         arcade.draw_text(
             "PAUSED - ESC TO CONTINUE",
-            start_x=0 + 500,
-            start_y=0 + 300,
+            start_x=self.window.width / 2,
+            start_y=self.window.height / 2,
             color=arcade.color.INDIGO,
             font_size=40,
         )

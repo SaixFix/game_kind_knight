@@ -2,10 +2,11 @@ from typing import Optional
 
 import arcade
 from arcade.gui import UILabel
+from pyglet.math import Vec2
 
 from gui.game_ui import GameUiAssets
 from ui_message import get_double_jump_message, start_message
-from other_views import MainMenu, PauseView, SettingsView
+from other_views import MainMenu, PauseView, SettingsView, LoadingView
 from settings import *
 import os
 import arcade.gui
@@ -14,10 +15,11 @@ from units import PlayerCharacter
 
 
 class GameWindow(arcade.Window):
-    def __init__(self, screen_wight, screen_height, screen_title):
-        super().__init__(screen_wight, screen_height, screen_title)
+    def __init__(self, screen_wight, screen_height, screen_title, full_screen):
+        super().__init__(screen_wight, screen_height, screen_title, full_screen)
 
         # all views
+        self.loading_view = LoadingView()
         self.main_menu = MainMenu()
         self.game_view = GameView()
         self.settings_view = SettingsView()
@@ -103,8 +105,8 @@ class GameView(arcade.View):
         # Timer on-screen, spend time.
         self.timer_text = arcade.Text(
             text="00:00:00",
-            start_x=SCREEN_WIDTH // 2,
-            start_y=1050,
+            start_x=self.window.width // 2,
+            start_y=self.window.height - 35,
             color=arcade.color.WHITE,
             font_size=18,
             anchor_x="center"
@@ -133,7 +135,6 @@ class GameView(arcade.View):
 
         # Load in TileMap
         self.tile_map = arcade.load_tilemap(map_name, TILE_SCALING, layer_options)
-
         # Initiate New Scene with our TileMap, this will automatically add all layers
         # from the map as SpriteLists in the scene in the proper order.
         self.scene = arcade.Scene.from_tilemap(self.tile_map)
@@ -177,10 +178,19 @@ class GameView(arcade.View):
         )
 
     def on_show_view(self):
+        """
+        Activate when call
+        """
+        # call self setup
         self.window.game_view.setup()
+        # UI manager enable
         self.manager.enable()
 
     def on_hide_view(self):
+        """
+         Activate when call other view
+        """
+        # UI manager disable
         self.manager.disable()
 
     def on_draw(self):
@@ -293,7 +303,11 @@ class GameView(arcade.View):
             screen_center_x = 0
         if screen_center_y < 0:
             screen_center_y = 0
-        player_centered = screen_center_x, screen_center_y
+        if screen_center_x > (self.tile_map.width * 64) - self.window.width:
+            screen_center_x = (self.tile_map.width * 64) - self.window.width
+        if screen_center_y > (self.tile_map.height * 64) - self.window.height:
+            screen_center_y = (self.tile_map.height * 64) - self.window.height
+        player_centered = Vec2(screen_center_x, screen_center_y)
 
         self.camera.move_to(player_centered, 0.2)
 
@@ -302,6 +316,7 @@ class GameView(arcade.View):
 
         # Move the player with the physics engine
         self.physics_engine.update()
+
 
         # Update animations
         if self.physics_engine.can_jump():
@@ -332,6 +347,8 @@ class GameView(arcade.View):
 
         # Accumulate the total time
         self.total_time += delta_time
+
+        print(f'player_start x, y: {self.player_sprite.center_x}, {self.player_sprite.center_y}{self.tile_map.width * 64}')
 
         # Calculate minutes
         minutes: int = int(self.total_time) // 60
@@ -393,8 +410,6 @@ class GameView(arcade.View):
             print(f'checkpoint x, y: {check_point.center_x}, {check_point.center_y}')
             print(f'player_start x, y: {self.player_start_x}, {self.player_start_y}')
 
-            # Remove the coin
-            # check_point.remove_from_sprite_lists()
 
         # Did the player fall off the map?
         if self.player_sprite.center_y < -100:
@@ -411,11 +426,11 @@ class GameView(arcade.View):
             self.player_sprite, self.scene[LAYER_NAME_MOVING_DIE_BLOCK]
 
         ):
-            self.player_sprite.change_x = 0
-            self.player_sprite.change_y = 0
-            self.player_sprite.center_x = self.player_start_x
-            self.player_sprite.center_y = self.player_start_y
-            self.die_score += 1
+            # self.player_sprite.change_x = 0
+            # self.player_sprite.change_y = 0
+            # self.player_sprite.center_x = self.player_start_x
+            # self.player_sprite.center_y = self.player_start_y
+            # self.die_score += 1
 
             arcade.play_sound(self.trap_dead, volume=self.window.sound_value)
 
@@ -436,7 +451,7 @@ class GameView(arcade.View):
 
 def main():
     """Main function"""
-    window = GameWindow(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+    window = GameWindow(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, FULL_SCREEN)
     arcade.run()
 
 

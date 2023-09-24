@@ -1,3 +1,5 @@
+import time
+
 import arcade.gui
 from arcade.experimental.uislider import UISlider
 from arcade.gui import UILabel, UIOnChangeEvent
@@ -90,7 +92,11 @@ class MainMenuUiAssets:
 
         @start_button.event("on_click")
         def on_click_start(event):
-            self.window.show_view(self.window.game_view)
+            self.window.show_view(self.window.loading_view)
+            # self.window.show_view(self.window.game_view)
+
+
+
 
         @exit_button.event("on_click")
         def on_click_exit(event):

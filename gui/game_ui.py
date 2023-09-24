@@ -22,8 +22,8 @@ class GameUiAssets:
         """
 
         settings_button = UITextureButton(
-            SCREEN_WIDTH - 30,
-            SCREEN_HEIGHT - 35,
+            self.window.width - 30,
+            self.window.height - 35,
             texture=self.settings,
             texture_hovered=self.settings_hover,
             texture_pressed=self.settings_pressed
@@ -46,7 +46,7 @@ class GameUiAssets:
             text_color=(255, 0, 0),
             font_size=18,
             x=250,
-            y=1050,
+            y=self.window.height - 35,
             bold=True
         )
 
@@ -68,7 +68,7 @@ class GameUiAssets:
             text_color=arcade.csscolor.GOLD,
             font_size=18,
             x=5,
-            y=1050,
+            y=self.window.height - 35,
             bold=True
         )
 
