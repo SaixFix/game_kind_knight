@@ -426,11 +426,11 @@ class GameView(arcade.View):
             self.player_sprite, self.scene[LAYER_NAME_MOVING_DIE_BLOCK]
 
         ):
-            # self.player_sprite.change_x = 0
-            # self.player_sprite.change_y = 0
-            # self.player_sprite.center_x = self.player_start_x
-            # self.player_sprite.center_y = self.player_start_y
-            # self.die_score += 1
+            self.player_sprite.change_x = 0
+            self.player_sprite.change_y = 0
+            self.player_sprite.center_x = self.player_start_x
+            self.player_sprite.center_y = self.player_start_y
+            self.die_score += 1
 
             arcade.play_sound(self.trap_dead, volume=self.window.sound_value)
 

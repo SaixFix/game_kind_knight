@@ -2,7 +2,7 @@
 SCREEN_WIDTH = 1920  # ширина
 SCREEN_HEIGHT = 1080  # высота
 SCREEN_TITLE = "Kind knight"  # название
-FULL_SCREEN = True  # полный экран
+FULL_SCREEN = False  # полный экран
 
 # Размеры
 TILE_SCALING = 2  # размер плитки
