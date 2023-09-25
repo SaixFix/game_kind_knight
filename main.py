@@ -68,6 +68,10 @@ class GameView(arcade.View):
         # Our TileMap Object
         self.tile_map: Optional[arcade.TileMap] = None
 
+        # Height and wight map in pixels
+        self.map_height: int = 0
+        self.map_width: int = 0
+
         # Our Scene Object
         self.scene: Optional[arcade.Scene] = None
 
@@ -89,9 +93,6 @@ class GameView(arcade.View):
 
         # Do we need to reset the score?
         self.reset_score: bool = True
-
-        # Where is the right edge of the map?
-        self.end_of_map: int = 0
 
         # Level
         self.level: int = 1
@@ -139,6 +140,8 @@ class GameView(arcade.View):
         # from the map as SpriteLists in the scene in the proper order.
         self.scene = arcade.Scene.from_tilemap(self.tile_map)
 
+
+
         # Keep track of the score, make sure we keep the score if the player finishes a level
         if self.reset_score:
             self.die_score = 0
@@ -160,8 +163,9 @@ class GameView(arcade.View):
 
         # --- Load in a map from the tiled editor ---
 
-        # Calculate the right edge of the my_map in pixels
-        self.end_of_map = self.tile_map.width * GRID_PIXEL_SIZE
+        # Calculate and set height and wight map in pixels
+        self.map_height = self.tile_map.height * 64
+        self.map_width = self.tile_map.width * 64
 
         # --- Other stuff
         # Set the background color
@@ -303,10 +307,10 @@ class GameView(arcade.View):
             screen_center_x = 0
         if screen_center_y < 0:
             screen_center_y = 0
-        if screen_center_x > (self.tile_map.width * 64) - self.window.width:
-            screen_center_x = (self.tile_map.width * 64) - self.window.width
-        if screen_center_y > (self.tile_map.height * 64) - self.window.height:
-            screen_center_y = (self.tile_map.height * 64) - self.window.height
+        if screen_center_x > self.map_width - self.window.width:
+            screen_center_x = self.map_width - self.window.width
+        if screen_center_y > self.map_height - self.window.height:
+            screen_center_y = self.map_height - self.window.height
         player_centered = Vec2(screen_center_x, screen_center_y)
 
         self.camera.move_to(player_centered, 0.2)
@@ -435,9 +439,14 @@ class GameView(arcade.View):
             arcade.play_sound(self.trap_dead, volume=self.window.sound_value)
 
         # See if the user got to the end of the level
-        if self.player_sprite.center_x >= self.end_of_map:
+        if self.player_sprite.center_x >= self.map_width:
             # Advance to the next level
-            self.level += 1
+            # self.level += 1
+            #
+            self.player_sprite.change_x = 0
+            self.player_sprite.change_y = 0
+            self.player_sprite.center_x = self.player_start_x
+            self.player_sprite.center_y = self.player_start_y
 
             # Make sure to keep the score from this level when setting up the next level
             self.reset_score = False
