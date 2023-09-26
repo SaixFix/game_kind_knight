@@ -3,6 +3,7 @@ from typing import Optional
 import arcade
 from arcade.gui import UILabel
 from pyglet.math import Vec2
+from arcade.experimental.lights import Light, LightLayer
 
 from gui.game_ui import GameUiAssets
 from ui_message import get_double_jump_message, start_message
@@ -42,6 +43,16 @@ class GameView(arcade.View):
         # запуска с помощью команды "python -m"
         file_path = os.path.dirname(os.path.abspath(__file__))
         os.chdir(file_path)
+
+        # Used for scrolling
+        self.view_left = 0
+        self.view_bottom = 0
+
+        # --- Light related ---
+        # List of all the lights
+        self.light_layer = None
+        # Individual light we move with player, and turn on/off
+        self.player_light = None
 
         # Create the UIManager
         self.manager = arcade.gui.UIManager()
@@ -140,7 +151,30 @@ class GameView(arcade.View):
         # from the map as SpriteLists in the scene in the proper order.
         self.scene = arcade.Scene.from_tilemap(self.tile_map)
 
+        # Create a light layer, used to render things to, then post-process and
+        # add lights. This must match the screen size.
+        self.light_layer = LightLayer(self.window.width, self.window.height)
+        # We can also set the background color that will be lit by lights,
+        # but in this instance we just want a black background
+        self.light_layer.set_background_color(arcade.color.BLACK)
 
+        # Create a small white light
+        x = 2855
+        y = 127
+        radius = 30
+        mode = 'soft'
+        color = arcade.csscolor.LIGHT_GOLDENROD_YELLOW
+        light = Light(x, y, radius, color, mode)
+        self.light_layer.add(light)
+
+        # Create a light to follow the player around.
+        # We'll position it later, when the player moves.
+        # We'll only add it to the light layer when the player turns the light
+        # on. We start with the light off.
+        radius = 150
+        mode = 'soft'
+        color = arcade.csscolor.WHITE_SMOKE
+        self.player_light = Light(0, 0, radius, color, mode)
 
         # Keep track of the score, make sure we keep the score if the player finishes a level
         if self.reset_score:
@@ -200,14 +234,47 @@ class GameView(arcade.View):
     def on_draw(self):
         """Render the screen."""
 
-        # Clear the screen to the background color
-        self.clear()
+        # # Clear the screen to the background color
+        # self.clear()
+        #
+        # # Activate the game camera
+        # self.camera.use()
+        #
+        # # Draw our Scene
+        # self.scene.draw()
+        #
+        # # Activate the GUI camera before drawing GUI elements
+        # self.gui_camera.use()
+        #
+        # # For draw GUI
+        # self.manager.draw()
+        #
+        # # Draw the timer text
+        # self.timer_text.draw()
 
         # Activate the game camera
         self.camera.use()
+        # --- Light related ---
+        # Everything that should be affected by lights gets rendered inside this
+        # 'with' statement. Nothing is rendered to the screen yet, just the light
+        # layer.
+        with self.light_layer:
+            self.scene[LAYER_NAME_BACKGROUND].draw()
+            self.scene.draw()
+            self.scene[LAYER_NAME_PLAYER].draw()
 
-        # Draw our Scene
-        self.scene.draw()
+        # Draw the light layer to the screen.
+        # This fills the entire screen with the lit version
+        # of what we drew into the light layer above.
+        self.light_layer.draw(ambient_color=AMBIENT_COLOR)
+
+        # Now draw anything that should NOT be affected by lighting.
+        arcade.draw_text("Press F to turn character light on/off.",
+                         10 + self.view_left, 10 + self.view_bottom,
+                         arcade.color.WHITE, 20)
+
+        # Activate the game camera
+        self.camera.use()
 
         # Activate the GUI camera before drawing GUI elements
         self.gui_camera.use()
@@ -270,6 +337,14 @@ class GameView(arcade.View):
             self.left_pressed = True
         elif key == arcade.key.RIGHT or key == arcade.key.D:
             self.right_pressed = True
+        elif key == arcade.key.F:
+            # --- Light related ---
+            # We can add/remove lights from the light layer. If they aren't
+            # in the light layer, the light is off.
+            if self.player_light in self.light_layer:
+                self.light_layer.remove(self.player_light)
+            else:
+                self.light_layer.add(self.player_light)
 
         # Did the user want to pause?
         elif key == arcade.key.ESCAPE:
@@ -321,6 +396,10 @@ class GameView(arcade.View):
         # Move the player with the physics engine
         self.physics_engine.update()
 
+        # --- Light related ---
+        # We can easily move the light by setting the position,
+        # or by center_x, center_y.
+        self.player_light.position = self.player_sprite.position
 
         # Update animations
         if self.physics_engine.can_jump():
@@ -351,8 +430,6 @@ class GameView(arcade.View):
 
         # Accumulate the total time
         self.total_time += delta_time
-
-        print(f'player_start x, y: {self.player_sprite.center_x}, {self.player_sprite.center_y}{self.tile_map.width * 64}')
 
         # Calculate minutes
         minutes: int = int(self.total_time) // 60
@@ -413,7 +490,6 @@ class GameView(arcade.View):
             self.player_start_y = check_point.center_y
             print(f'checkpoint x, y: {check_point.center_x}, {check_point.center_y}')
             print(f'player_start x, y: {self.player_start_x}, {self.player_start_y}')
-
 
         # Did the player fall off the map?
         if self.player_sprite.center_y < -100:

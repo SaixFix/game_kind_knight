@@ -13,9 +13,8 @@ class MainMenu(arcade.View):
         super().__init__()
 
         # Background image
-        self.background = arcade.load_texture("./data/textures/background.png") \
- \
-            # Background music
+        self.background = arcade.load_texture("./data/textures/background.png")
+        # Background music
         self.music = arcade.load_sound('./data/sounds/background_music_menu.mp3')
         self.media_player = self.music.play(loop=True)
         self.media_player.volume = 0.5

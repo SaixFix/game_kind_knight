@@ -30,6 +30,10 @@ PLAYER_START_Y = 225
 RIGHT_FACING = 0  # На право
 LEFT_FACING = 1  # На лево
 
+# This is the color used for 'ambient light'. If you don't want any
+# ambient light, set it to black.
+AMBIENT_COLOR = (10, 10, 10)
+
 # Название слоев из TileMap
 LAYER_NAME_SKY = "sky"
 LAYER_NAME_GROUND = "ground"
