@@ -6,6 +6,8 @@ from pyglet.math import Vec2
 from arcade.experimental.lights import Light, LightLayer
 
 from gui.game_ui import GameUiAssets
+from levels.lvl_1 import Lvl1
+from levels.lvl_2 import Lvl2
 from ui_message import get_double_jump_message, start_message
 from other_views import MainMenu, PauseView, SettingsView, LoadingView
 from settings import *
@@ -14,6 +16,7 @@ import arcade.gui
 
 from units import PlayerCharacter
 
+lvl_dict = {1: Lvl1, 2: Lvl2}
 
 class GameWindow(arcade.Window):
     def __init__(self, screen_wight, screen_height, screen_title, full_screen):
@@ -25,6 +28,7 @@ class GameWindow(arcade.Window):
         self.game_view = GameView()
         self.settings_view = SettingsView()
         self.show_view(self.main_menu)
+
 
         # Set background color
         arcade.set_background_color(arcade.color.DARK_BLUE_GRAY)
@@ -143,7 +147,7 @@ class GameView(arcade.View):
         map_name: str = f"./data/levels/level_{self.level}.tmx"
 
         # Layer Specific Options for the Tilemap
-        layer_options: dict = LAYER_OPTIONS
+        layer_options: dict = lvl_dict[self.level].layer_options()
 
         # Load in TileMap
         self.tile_map = arcade.load_tilemap(map_name, TILE_SCALING, layer_options)
@@ -234,56 +238,27 @@ class GameView(arcade.View):
     def on_draw(self):
         """Render the screen."""
 
-        # # Clear the screen to the background color
-        # self.clear()
-        #
-        # # Activate the game camera
-        # self.camera.use()
-        #
+        # Clear the screen to the background color
+        self.clear()
+
+        # Activate the game camera
+        self.camera.use()
+
+        lvl_dict[self.level].on_draw(self)
         # # Draw our Scene
         # self.scene.draw()
         #
-        # # Activate the GUI camera before drawing GUI elements
-        # self.gui_camera.use()
-        #
-        # # For draw GUI
-        # self.manager.draw()
-        #
-        # # Draw the timer text
-        # self.timer_text.draw()
-
-        # Activate the game camera
-        self.camera.use()
-        # --- Light related ---
-        # Everything that should be affected by lights gets rendered inside this
-        # 'with' statement. Nothing is rendered to the screen yet, just the light
-        # layer.
-        with self.light_layer:
-            self.scene[LAYER_NAME_BACKGROUND].draw()
-            self.scene.draw()
-            self.scene[LAYER_NAME_PLAYER].draw()
-
-        # Draw the light layer to the screen.
-        # This fills the entire screen with the lit version
-        # of what we drew into the light layer above.
-        self.light_layer.draw(ambient_color=AMBIENT_COLOR)
-
-        # Now draw anything that should NOT be affected by lighting.
-        arcade.draw_text("Press F to turn character light on/off.",
-                         10 + self.view_left, 10 + self.view_bottom,
-                         arcade.color.WHITE, 20)
-
-        # Activate the game camera
-        self.camera.use()
-
         # Activate the GUI camera before drawing GUI elements
         self.gui_camera.use()
 
-        # For draw GUI
-        self.manager.draw()
+
 
         # Draw the timer text
         self.timer_text.draw()
+        #
+        #
+        # For draw GUI
+        self.manager.draw()
 
         # Draw hit boxes.
 
@@ -462,10 +437,11 @@ class GameView(arcade.View):
                 self.double_jump_get = True
                 # get pop_up message
                 get_double_jump_message(arcade, self.manager)
+
             if 'cost' in chest.properties:
                 self.gold_score += int(chest.properties['cost'])
-                # Play a sound
-                arcade.play_sound(self.collect_coin_sound, volume=self.window.sound_value)
+            # Play a sound
+            arcade.play_sound(self.collect_coin_sound, volume=self.window.sound_value)
             # Remove the chest
             chest.remove_from_sprite_lists()
 
@@ -486,10 +462,15 @@ class GameView(arcade.View):
 
         # Loop through each check_point we hit
         for check_point in check_point_hit_list:
+            if 'finish' in check_point.properties:
+                self.level += 1
+                self.setup()
+                print('finish')
             self.player_start_x = check_point.center_x
             self.player_start_y = check_point.center_y
-            print(f'checkpoint x, y: {check_point.center_x}, {check_point.center_y}')
-            print(f'player_start x, y: {self.player_start_x}, {self.player_start_y}')
+
+            # print(f'checkpoint x, y: {check_point.center_x}, {check_point.center_y}')
+            # print(f'player_start x, y: {self.player_start_x}, {self.player_start_y}')
 
         # Did the player fall off the map?
         if self.player_sprite.center_y < -100:
@@ -506,10 +487,10 @@ class GameView(arcade.View):
             self.player_sprite, self.scene[LAYER_NAME_MOVING_DIE_BLOCK]
 
         ):
-            self.player_sprite.change_x = 0
-            self.player_sprite.change_y = 0
-            self.player_sprite.center_x = self.player_start_x
-            self.player_sprite.center_y = self.player_start_y
+            # self.player_sprite.change_x = 0
+            # self.player_sprite.change_y = 0
+            # self.player_sprite.center_x = self.player_start_x
+            # self.player_sprite.center_y = self.player_start_y
             self.die_score += 1
 
             arcade.play_sound(self.trap_dead, volume=self.window.sound_value)
@@ -517,8 +498,8 @@ class GameView(arcade.View):
         # See if the user got to the end of the level
         if self.player_sprite.center_x >= self.map_width:
             # Advance to the next level
-            # self.level += 1
-            #
+            self.level += 1
+
             self.player_sprite.change_x = 0
             self.player_sprite.change_y = 0
             self.player_sprite.center_x = self.player_start_x

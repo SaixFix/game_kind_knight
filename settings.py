@@ -31,7 +31,7 @@ RIGHT_FACING = 0  # На право
 LEFT_FACING = 1  # На лево
 
 # This is the color used for 'ambient light'. If you don't want any
-# ambient light, set it to black.
+# ambient light, set it to black. White (255, 255, 255). Black (10, 10, 10)
 AMBIENT_COLOR = (10, 10, 10)
 
 # Название слоев из TileMap
